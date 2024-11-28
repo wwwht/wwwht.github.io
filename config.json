@@ -4,7 +4,7 @@
     "subTitle":"Daily notes",
     "avatarUrl":"https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg",
     "GMEEK_VERSION":"last",
-    "startSite":"11/28/2014",
+    "startSite":"11/28/2024",
     "onePageListNum":15,
     "singlePage":["about"],
     "iconList":{"music":"M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13Z"},
@@ -21,5 +21,8 @@
     "bottomText":"转载请注明出处",
     "ogImage":"https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg",
     "primerCSS":"<link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />",
-    "needComment":0
+    "needComment":0,
+    "style":"<style>#postBody{font-size:20px}</style>",
+    "script":"<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script>",
+    "allHead":"<script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>"
 }
