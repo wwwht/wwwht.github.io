@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
-    
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>
     <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
@@ -17,7 +17,7 @@
 <meta property="og:url" content="https://wwwht.github.io/post/Markdown-yu-fa-da-quan.html">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
 <title>Markdown语法大全</title>
-
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
 
 
 </head>
@@ -53,7 +53,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
     font-size: 12px;
 }
 </style>
-
+<style>#postBody{font-size:20px}</style><style>.markdown-alert{padding:0.5rem 1rem;margin-bottom:1rem;border-left:.25em solid var(--borderColor-default,var(--color-border-default));}.markdown-alert .markdown-alert-title {display:flex;font-weight:var(--base-text-weight-medium,500);align-items:center;line-height:1;}.markdown-alert>:first-child {margin-top:0;}.markdown-alert>:last-child {margin-bottom:0;}</style><style>.markdown-alert.markdown-alert-note {border-left-color:var(--borderColor-accent-emphasis, var(--color-accent-emphasis));background-color:var(--color-accent-subtle);}.markdown-alert.markdown-alert-note .markdown-alert-title {color: var(--fgColor-accent,var(--color-accent-fg));}</style><style>.markdown-alert.markdown-alert-tip {border-left-color:var(--borderColor-success-emphasis, var(--color-success-emphasis));background-color:var(--color-success-subtle);}.markdown-alert.markdown-alert-tip .markdown-alert-title {color: var(--fgColor-success,var(--color-success-fg));}</style><style>.markdown-alert.markdown-alert-important {border-left-color:var(--borderColor-done-emphasis, var(--color-done-emphasis));background-color:var(--color-done-subtle);}.markdown-alert.markdown-alert-important .markdown-alert-title {color: var(--fgColor-done,var(--color-done-fg));}</style><style>.markdown-alert.markdown-alert-warning {border-left-color:var(--borderColor-attention-emphasis, var(--color-attention-emphasis));background-color:var(--color-attention-subtle);}.markdown-alert.markdown-alert-warning .markdown-alert-title {color: var(--fgColor-attention,var(--color-attention-fg));}</style><style>.markdown-alert.markdown-alert-caution {border-left-color:var(--borderColor-danger-emphasis, var(--color-danger-emphasis));background-color:var(--color-danger-subtle);}.markdown-alert.markdown-alert-caution .markdown-alert-title {color: var(--fgColor-danger,var(--color-danger-fg));}</style>
 
 
 
@@ -84,10 +84,208 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
     <div id="content">
 <div class="markdown-body" id="postBody"><p>这是一个markdown格式的测试页面，也是个人经常会使用的格式记录。</p>
-<h1>Static Badge</h1>
-<pre class="notranslate"><code class="notranslate"> ![](https://img.shields.io/badge/参考页面-orange)
+<h2>Static Badge</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-s">![</span><span class="pl-s">]</span><span class="pl-s">(</span><span class="pl-corl">https://img.shields.io/badge/参考页面-orange</span><span class="pl-s">)</span></pre></div>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d807703912e2569aebe8076458386a85b94e6d197e973b1326b2084f4d51c249/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2545352538462538322545382538302538332545392541312542352545392539442541322d6f72616e6765"><img src="https://camo.githubusercontent.com/d807703912e2569aebe8076458386a85b94e6d197e973b1326b2084f4d51c249/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2545352538462538322545382538302538332545392541312542352545392539442541322d6f72616e6765" alt="" style="max-width: 100%;"></a></p>
+<h2>标题</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-mh"># <span class="pl-en">H1</span></span>
+<span class="pl-mh">## <span class="pl-en">H2</span></span>
+<span class="pl-mh">### <span class="pl-en">H3</span></span>
+<span class="pl-mh">#### <span class="pl-en">H4</span></span></pre></div>
+<h2>强调</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate">今天的天气真好啊，可以吃<span class="pl-s">**</span>冰激凌<span class="pl-s">**</span>吗？</pre></div>
+<p>今天的天气真好啊，可以吃<strong>冰激凌</strong>吗？</p>
+<h2>删除横线</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate">今天的天气真好啊，可以吃<span class="pl-s">~~</span>冰激凌<span class="pl-s">~~</span>吗？</pre></div>
+<p>今天的天气真好啊，可以吃<del>冰激凌</del>吗？</p>
+<h2>列表</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-s">1</span><span class="pl-v">.</span> 看电视
+<span class="pl-s">2</span><span class="pl-v">.</span> 吃饭
+<span class="pl-s">3</span><span class="pl-v">.</span> 睡觉
+
+<span class="pl-v">-</span> 乒乓球
+<span class="pl-v">-</span> 篮球
+<span class="pl-v">-</span> 羽毛球</pre></div>
+<ol>
+<li>看电视</li>
+<li>吃饭</li>
+<li>睡觉</li>
+</ol>
+<ul>
+<li>乒乓球</li>
+<li>篮球</li>
+<li>羽毛球</li>
+</ul>
+<h2>代码高亮</h2>
+<div class="highlight highlight-source-python"><pre class="notranslate"><span class="pl-k">import</span> <span class="pl-s1">request</span>  
+<span class="pl-k">import</span> <span class="pl-s1">time</span>
+
+<span class="pl-s1">time</span>.<span class="pl-en">sleep_ms</span>(<span class="pl-c1">1000</span>)  
+<span class="pl-en">print</span>(<span class="pl-s">"Hello World"</span>)  </pre></div>
+<div class="highlight highlight-source-python"><pre class="notranslate"><span class="pl-k">import</span> <span class="pl-s1">request</span>
+<span class="pl-k">import</span> <span class="pl-s1">time</span>
+
+<span class="pl-s1">time</span>.<span class="pl-en">sleep_ms</span>(<span class="pl-c1">1000</span>)
+<span class="pl-en">print</span>(<span class="pl-s">"Hello World"</span>)</pre></div>
+<h2>链接</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-s">[</span>我的博客<span class="pl-s">]</span><span class="pl-s">(</span><span class="pl-corl">https://meekdai.github.io</span><span class="pl-s">)</span></pre></div>
+<p><a href="https://meekdai.github.io/" rel="nofollow">我的博客</a></p>
+<h2>图片</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-s">![</span>这是我的头像PNG<span class="pl-s">]</span><span class="pl-s">(</span><span class="pl-corl">https://github.com/Meekdai/meekdai.github.io/assets/11755104/e4da3470-d4b1-4cc7-9d84-f7da69f90a76</span><span class="pl-s">)</span>
+<span class="pl-s">![</span>这是我的头像SVG<span class="pl-s">]</span><span class="pl-s">(</span><span class="pl-corl">https://blog.meekdai.com/avatar.svg</span><span class="pl-s">)</span></pre></div>
+<h2>表格</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-ml">|</span> Table Heading 1 <span class="pl-ml">|</span> Table Heading 2 <span class="pl-ml">|</span> Center align    <span class="pl-ml">|</span> Right align     <span class="pl-ml">|</span> Table Heading 5 <span class="pl-ml">|</span>
+<span class="pl-ml">|</span> :-------------- <span class="pl-ml">|</span> :-------------- <span class="pl-ml">|</span> :-------------: <span class="pl-ml">|</span> --------------: <span class="pl-ml">|</span> :-------------- <span class="pl-ml">|</span>
+<span class="pl-ml">|</span> Item 1          <span class="pl-ml">|</span> Item 2          <span class="pl-ml">|</span> Item 3          <span class="pl-ml">|</span> Item 4          <span class="pl-ml">|</span> Item 5          <span class="pl-ml">|</span>
+<span class="pl-ml">|</span> Item 1          <span class="pl-ml">|</span> Item 2          <span class="pl-ml">|</span> Item 3          <span class="pl-ml">|</span> Item 4          <span class="pl-ml">|</span> Item 5          <span class="pl-ml">|</span>
+<span class="pl-ml">|</span> Item 1          <span class="pl-ml">|</span> Item 2          <span class="pl-ml">|</span> Item 3          <span class="pl-ml">|</span> Item 4          <span class="pl-ml">|</span> Item 5          <span class="pl-ml">|</span></pre></div>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th align="left">Table Heading 1</th>
+<th align="left">Table Heading 2</th>
+<th align="center">Center align</th>
+<th align="right">Right align</th>
+<th align="left">Table Heading 5</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Item 1</td>
+<td align="left">Item 2</td>
+<td align="center">Item 3</td>
+<td align="right">Item 4</td>
+<td align="left">Item 5</td>
+</tr>
+<tr>
+<td align="left">Item 1</td>
+<td align="left">Item 2</td>
+<td align="center">Item 3</td>
+<td align="right">Item 4</td>
+<td align="left">Item 5</td>
+</tr>
+<tr>
+<td align="left">Item 1</td>
+<td align="left">Item 2</td>
+<td align="center">Item 3</td>
+<td align="right">Item 4</td>
+<td align="left">Item 5</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h2>水平线</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-s">---</span>
+<span class="pl-s">我在2个水平线中间</span>
+<span class="pl-s">***</span></pre></div>
+<hr>
+<p>我在2个水平线中间</p>
+<hr>
+<h2>引用</h2>
+<div class="highlight highlight-text-md"><pre class="notranslate"><span class="pl-ent"><span class="pl-ent">&gt; </span>落霞与孤鹜齐飞，秋水共长天一色。《滕王阁序》--王勃 </span></pre></div>
+<blockquote>
+<p>落霞与孤鹜齐飞，秋水共长天一色。《滕王阁序》--王勃</p>
+</blockquote>
+<h2>对比</h2>
+<div class="highlight highlight-source-diff"><pre class="notranslate"><span class="pl-mi1"><span class="pl-mi1">+</span> this text is highlighted in green</span>
+<span class="pl-md"><span class="pl-md">-</span> this text is highlighted in red</span></pre></div>
+<div class="highlight highlight-source-diff"><pre class="notranslate"><span class="pl-mi1"><span class="pl-mi1">+</span> this text is highlighted in green</span>
+<span class="pl-md"><span class="pl-md">-</span> this text is highlighted in red</span></pre></div>
+<h2>字体颜色</h2>
+<div class="highlight highlight-source-css"><pre class="notranslate"><span class="pl-ent">Some</span> <span class="pl-ent">text</span> <span class="pl-ent">in</span> <span class="pl-ent">green</span>! 123</pre></div>
+<div class="highlight highlight-source-css"><pre class="notranslate"><span class="pl-ent">Some</span> <span class="pl-ent">text</span> <span class="pl-ent">in</span> <span class="pl-ent">green</span>! 123</pre></div>
+<div class="highlight highlight-source-p4"><pre class="notranslate"><span class="pl-c1">Some</span> <span class="pl-c1">text</span> <span class="pl-c1">in</span> <span class="pl-c1">blue</span>! <span class="pl-c1">123</span></pre></div>
+<div class="highlight highlight-source-mint"><pre class="notranslate"><span class="pl-en">Some</span> <span class="pl-c1">text</span> <span class="pl-c1">in</span> <span class="pl-c1">blue</span> <span class="pl-k">with</span> <span class="pl-c1">additional</span> <span class="pl-c1">keyword</span> <span class="pl-c1">highlighting</span>! <span class="pl-c1">123</span></pre></div>
+<div class="highlight highlight-source-p4"><pre class="notranslate"><span class="pl-c1">Some</span> <span class="pl-c1">text</span> <span class="pl-c1">in</span> <span class="pl-c1">blue</span>! <span class="pl-c1">123</span></pre></div>
+<div class="highlight highlight-source-mint"><pre class="notranslate"><span class="pl-en">Some</span> <span class="pl-c1">text</span> <span class="pl-c1">in</span> <span class="pl-c1">blue</span> <span class="pl-k">with</span> <span class="pl-c1">additional</span> <span class="pl-c1">keyword</span> <span class="pl-c1">highlighting</span>! <span class="pl-c1">123</span></pre></div>
+<div class="highlight highlight-source-json"><pre class="notranslate"><span class="pl-ii">Some text highlighted in red! 123</span></pre></div>
+<div class="highlight highlight-source-json"><pre class="notranslate"><span class="pl-ii">Some text highlighted in red! 123</span></pre></div>
+<h2>HTML tricks</h2>
+<p>Monospaced text</p>
+<div class="highlight highlight-text-html-basic"><pre class="notranslate"><span class="pl-kos">&lt;</span><span class="pl-ent">samp</span><span class="pl-kos">&gt;</span>Monospaced text<span class="pl-kos">&lt;/</span><span class="pl-ent">samp</span><span class="pl-kos">&gt;</span></pre></div>
+<hr>
+<p>Underlined text</p>
+<div class="highlight highlight-text-html-basic"><pre class="notranslate"><span class="pl-kos">&lt;</span><span class="pl-ent">ins</span><span class="pl-kos">&gt;</span>Underlined text<span class="pl-kos">&lt;/</span><span class="pl-ent">ins</span><span class="pl-kos">&gt;</span></pre></div>
+<hr>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Boxed text</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<div class="highlight highlight-text-html-basic"><pre class="notranslate"><span class="pl-kos">&lt;</span><span class="pl-ent">table</span><span class="pl-kos">&gt;</span><span class="pl-kos">&lt;</span><span class="pl-ent">tr</span><span class="pl-kos">&gt;</span><span class="pl-kos">&lt;</span><span class="pl-ent">td</span><span class="pl-kos">&gt;</span>Boxed text<span class="pl-kos">&lt;/</span><span class="pl-ent">td</span><span class="pl-kos">&gt;</span><span class="pl-kos">&lt;/</span><span class="pl-ent">tr</span><span class="pl-kos">&gt;</span><span class="pl-kos">&lt;/</span><span class="pl-ent">table</span><span class="pl-kos">&gt;</span></pre></div>
+<hr>
+<p>Item summary with dropdown</p>
+<details>
+<summary>Item summary with dropdown</summary>
+<p>Dropdown content (supports <strong>markdown</strong> <del>yay!</del>)</p>
+<div class="highlight highlight-source-json"><pre class="notranslate">{
+  <span class="pl-ii">awesome: "true"</span>
+}</pre></div>
+</details>
+<hr>
+<p><strong><em>Italic-bold</em></strong></p>
+<pre class="notranslate"><code class="notranslate">__*Italic-bold*__
 </code></pre>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d807703912e2569aebe8076458386a85b94e6d197e973b1326b2084f4d51c249/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2545352538462538322545382538302538332545392541312542352545392539442541322d6f72616e6765"><img src="https://camo.githubusercontent.com/d807703912e2569aebe8076458386a85b94e6d197e973b1326b2084f4d51c249/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f2545352538462538322545382538302538332545392541312542352545392539442541322d6f72616e6765" alt="" data-canonical-src="https://img.shields.io/badge/%E5%8F%82%E8%80%83%E9%A1%B5%E9%9D%A2-orange" style="max-width: 100%;"></a></p></div>
+<hr>
+<p>SuperscriptTM</p>
+<pre class="notranslate"><code class="notranslate">Superscript&lt;sup&gt;TM&lt;/sup&gt;
+</code></pre>
+<hr>
+<p>Superscript-italic_tm_</p>
+<pre class="notranslate"><code class="notranslate">Superscript-italic&lt;sup&gt;*tm*&lt;/sup&gt;
+</code></pre>
+<hr>
+<p>Subscriptx</p>
+<pre class="notranslate"><code class="notranslate">Subscript&lt;sub&gt;x&lt;/sub&gt;
+</code></pre>
+<hr>
+<p>Subscript-bold<strong>min</strong></p>
+<pre class="notranslate"><code class="notranslate">Subscript-bold&lt;sub&gt;**min**&lt;/sub&gt;
+</code></pre>
+<hr>
+<p><del><strong><em>Italic-bold-strikethrough</em></strong></del></p>
+<pre class="notranslate"><code class="notranslate">~~__*Italic-bold-strikethrough*__~~
+</code></pre>
+<h2>HTML TIPS</h2>
+<pre class="notranslate"><code class="notranslate">&gt; [!NOTE]
+&gt; Useful information that users should know, even when skimming content.
+
+&gt; [!TIP]
+&gt; Helpful advice for doing things better or more easily.
+
+&gt; [!IMPORTANT]
+&gt; Key information users need to know to achieve their goal.
+
+&gt; [!WARNING]
+&gt; Urgent info that needs immediate user attention to avoid problems.
+
+&gt; [!CAUTION]
+&gt; Advises about risks or negative outcomes of certain actions.
+</code></pre>
+<div class="markdown-alert markdown-alert-note"><p class="markdown-alert-title"><svg class="octicon octicon-info mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p><p>Useful information that users should know, even when skimming content.</p>
+</div>
+<div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title"><svg class="octicon octicon-light-bulb mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>Tip</p><p>Helpful advice for doing things better or more easily.</p>
+</div>
+<div class="markdown-alert markdown-alert-important"><p class="markdown-alert-title"><svg class="octicon octicon-report mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Important</p><p>Key information users need to know to achieve their goal.</p>
+</div>
+<div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title"><svg class="octicon octicon-alert mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p><p>Urgent info that needs immediate user attention to avoid problems.</p>
+</div>
+<div class="markdown-alert markdown-alert-caution"><p class="markdown-alert-title"><svg class="octicon octicon-stop mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Caution</p><p>Advises about risks or negative outcomes of certain actions.</p>
+</div>
+<p>由于<a href="https://primer.style/css" rel="nofollow">primer.style</a>没有对<code class="notranslate">alerts</code>标签进行颜色处理，所以在Gmeek的<code class="notranslate">v2.19</code>版本添加了颜色的支持，效果还是不错的，同时切换亮暗主题也有对应的变化。</p>
+<p>参考链接：<a href="https://docs.github.com/zh/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts">https://docs.github.com/zh/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#alerts</a></p>
+<h2>参考</h2>
+<p>更多GitHub Markdown 语法参考：</p>
+<ol>
+<li><a href="https://github.com/Olwiba/Kickass-markdown/">https://github.com/Olwiba/Kickass-markdown/</a></li>
+<li><a href="https://docs.github.com/zh/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax">https://docs.github.com/zh/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax</a></li>
+</ol></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 </div>
@@ -100,8 +298,8 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 var now=new Date();
 document.getElementById("copyrightYear").innerHTML=now.getFullYear();
 
-if("11/28/2014"!=""){
-    var startSite=new Date("11/28/2014");
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
     var diff=now.getTime()-startSite.getTime();
     var diffDay=Math.floor(diff/(1000*60*60*24));
     document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
@@ -213,6 +411,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 </script>
-
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script>
 
 </html>
