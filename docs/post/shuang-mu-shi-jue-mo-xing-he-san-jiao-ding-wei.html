@@ -252,6 +252,9 @@ $c_l, c_r, p$组成的平面成为极平面 (epipolar plane)</li>
 <a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/74fee8bae03e2614769405cc1bba9c2ef4c5781b3b0f31150d597a76054afb0a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431313239313735313836372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/74fee8bae03e2614769405cc1bba9c2ef4c5781b3b0f31150d597a76054afb0a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431313239313735313836372e706e673f696d616765536c696d" alt="image.png|525" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411291751867.png?imageSlim" style="max-width: 100%;"></a></p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
 </div>
     <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
 <div id="footer2">
@@ -308,6 +311,41 @@ document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
 
 
 
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const createClipboardHTML = (codeContent, additionalClasses = '') => `
