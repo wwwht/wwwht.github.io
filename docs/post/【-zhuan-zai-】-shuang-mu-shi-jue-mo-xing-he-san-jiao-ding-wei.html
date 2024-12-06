@@ -302,14 +302,14 @@ $$</p>
 <p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/fdd1573e2f9fb2a902d8587b21d90f8a903297d17b183eea3930061ed94a12d7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323032313533333135302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/fdd1573e2f9fb2a902d8587b21d90f8a903297d17b183eea3930061ed94a12d7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323032313533333135302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412021533150.png?imageSlim" style="max-width: 100%;"></a></p>
 <div class="highlight highlight-source-python"><pre class="notranslate"><span class="pl-k">import</span> <span class="pl-s1">numpy</span> <span class="pl-k">as</span> <span class="pl-s1">np</span>
 
-<span class="pl-k">def</span> <span class="pl-en">find_epipole</span>(<span class="pl-v">F</span>):
+<span class="pl-k">def</span> <span class="pl-en">find_epipole</span>(<span class="pl-c1">F</span>):
     <span class="pl-s">"""</span>
 <span class="pl-s">    使用 SVD 求解基础矩阵 F 的极点 e</span>
 <span class="pl-s">    :param F: 基础矩阵 (3x3)</span>
 <span class="pl-s">    :return: 极点 e 的齐次坐标</span>
 <span class="pl-s">    """</span>
     <span class="pl-c"># 对 F 进行 SVD 分解</span>
-    <span class="pl-v">U</span>, <span class="pl-v">S</span>, <span class="pl-v">Vt</span> <span class="pl-c1">=</span> <span class="pl-s1">np</span>.<span class="pl-s1">linalg</span>.<span class="pl-en">svd</span>(<span class="pl-v">F</span>)
+    <span class="pl-c1">U</span>, <span class="pl-c1">S</span>, <span class="pl-v">Vt</span> <span class="pl-c1">=</span> <span class="pl-s1">np</span>.<span class="pl-c1">linalg</span>.<span class="pl-c1">svd</span>(<span class="pl-c1">F</span>)
     
     <span class="pl-c"># 极点 e 是 V 的最后一列（V 是 Vt 的转置）</span>
     <span class="pl-s1">e</span> <span class="pl-c1">=</span> <span class="pl-v">Vt</span>[<span class="pl-c1">-</span><span class="pl-c1">1</span>]  <span class="pl-c"># 最后一行的转置就是最后一列</span>
