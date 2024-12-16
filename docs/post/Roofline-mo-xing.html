@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="参考：
+Samuel Williams, Roofline Performance Modeling for HPC and Deep Learning Applications, https://crd.lbl.gov/assets/Uploads/S21565-Roofline-1-Intro.pdf  
+YouTube English Presentation：Roofline Hackathon 2020 part 1 and 2 - YouTube  
+Paper：Roofline charts were first introduced by David Patterson and others in 2008 in their ACM paper [“Roofline: An Insightful Visual Performance Model](https://people.eecs.berkeley.edu/~kubitron/cs252/handouts/papers/RooflineVyNoYellow.pdf)
+[YOYO鹿鸣](https://blog.csdn.net/sinat_35360418/article/details/128704146?spm=1001.2014.3001.5502)
+[Telesens](https://www.telesens.co/2018/07/26/understanding-roofline-charts/)
+[Instruction Roofline](https://crd.lbl.gov/assets/Uploads/InstructionRooflineModel-PMBS19-.pdf)
+
+# 引入：什么是较好的性能评价模型
+
+
+
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131334071.png?imageSlim)
+假设在GPU上对内核的循环测试进行性能分析，我们对不同的loop nest得到了随机的flop rates，有的很高，有的很低，这意味着只用GFLOP/s去评价性能可能有失偏颇.
+
+![image.png|425](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131341297.png?imageSlim)
+假设我们把某CPU代码移植到了Nvida GPU或者是AMD GPU中，将原CPU代码作为baseline（绿色），去对比移植后的代码性能（灰色）提升了多少，然后发现在有的循环中提升了非常多（例如第三根柱子、最后一根柱子），有的循环中只提升了一点点（例如第6根柱子），也不能很好的评价性能。">
+<meta property="og:title" content="Roofline模型">
+<meta property="og:description" content="参考：
+Samuel Williams, Roofline Performance Modeling for HPC and Deep Learning Applications, https://crd.lbl.gov/assets/Uploads/S21565-Roofline-1-Intro.pdf  
+YouTube English Presentation：Roofline Hackathon 2020 part 1 and 2 - YouTube  
+Paper：Roofline charts were first introduced by David Patterson and others in 2008 in their ACM paper [“Roofline: An Insightful Visual Performance Model](https://people.eecs.berkeley.edu/~kubitron/cs252/handouts/papers/RooflineVyNoYellow.pdf)
+[YOYO鹿鸣](https://blog.csdn.net/sinat_35360418/article/details/128704146?spm=1001.2014.3001.5502)
+[Telesens](https://www.telesens.co/2018/07/26/understanding-roofline-charts/)
+[Instruction Roofline](https://crd.lbl.gov/assets/Uploads/InstructionRooflineModel-PMBS19-.pdf)
+
+# 引入：什么是较好的性能评价模型
+
+
+
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131334071.png?imageSlim)
+假设在GPU上对内核的循环测试进行性能分析，我们对不同的loop nest得到了随机的flop rates，有的很高，有的很低，这意味着只用GFLOP/s去评价性能可能有失偏颇.
+
+![image.png|425](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131341297.png?imageSlim)
+假设我们把某CPU代码移植到了Nvida GPU或者是AMD GPU中，将原CPU代码作为baseline（绿色），去对比移植后的代码性能（灰色）提升了多少，然后发现在有的循环中提升了非常多（例如第三根柱子、最后一根柱子），有的循环中只提升了一点点（例如第6根柱子），也不能很好的评价性能。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/Roofline-mo-xing.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>Roofline模型</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+<style>#postBody{font-size:20px}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">Roofline模型</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/3" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>参考：<br>
+Samuel Williams, Roofline Performance Modeling for HPC and Deep Learning Applications, <a href="https://crd.lbl.gov/assets/Uploads/S21565-Roofline-1-Intro.pdf" rel="nofollow">https://crd.lbl.gov/assets/Uploads/S21565-Roofline-1-Intro.pdf</a><br>
+YouTube English Presentation：Roofline Hackathon 2020 part 1 and 2 - YouTube<br>
+Paper：Roofline charts were first introduced by David Patterson and others in 2008 in their ACM paper <a href="https://people.eecs.berkeley.edu/~kubitron/cs252/handouts/papers/RooflineVyNoYellow.pdf" rel="nofollow">“Roofline: An Insightful Visual Performance Model</a><br>
+<a href="https://blog.csdn.net/sinat_35360418/article/details/128704146?spm=1001.2014.3001.5502" rel="nofollow">YOYO鹿鸣</a><br>
+<a href="https://www.telesens.co/2018/07/26/understanding-roofline-charts/" rel="nofollow">Telesens</a><br>
+<a href="https://crd.lbl.gov/assets/Uploads/InstructionRooflineModel-PMBS19-.pdf" rel="nofollow">Instruction Roofline</a></p>
+<h1>引入：什么是较好的性能评价模型</h1>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/c4b0d72736c2f9a1ab378150483e6dd17224bf707f6f859c0c82931804dc1085/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313333343037312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/c4b0d72736c2f9a1ab378150483e6dd17224bf707f6f859c0c82931804dc1085/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313333343037312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131334071.png?imageSlim" style="max-width: 100%;"></a><br>
+假设在GPU上对内核的循环测试进行性能分析，我们对不同的loop nest得到了随机的flop rates，有的很高，有的很低，这意味着只用GFLOP/s去评价性能可能有失偏颇.</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/7c660c4deba539c21011e946485a319fa3993a2d29a733c16702bb36da02c4b5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313334313239372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/7c660c4deba539c21011e946485a319fa3993a2d29a733c16702bb36da02c4b5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313334313239372e706e673f696d616765536c696d" alt="image.png|425" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131341297.png?imageSlim" style="max-width: 100%;"></a><br>
+假设我们把某CPU代码移植到了Nvida GPU或者是AMD GPU中，将原CPU代码作为baseline（绿色），去对比移植后的代码性能（灰色）提升了多少，然后发现在有的循环中提升了非常多（例如第三根柱子、最后一根柱子），有的循环中只提升了一点点（例如第6根柱子），也不能很好的评价性能。</p>
+<p><strong>那么什么是“好的”性能？</strong>(GPU为例), 两个基本评价标准：</p>
+<ol>
+<li>能够在吞吐量有限的情况下运行</li>
+</ol>
+<blockquote>
+<p>​ not sensitive to Amdahl effects, D2H/H2D transfers, launch overheads, etc…</p>
+</blockquote>
+<p>​ 对于阿达姆效应不敏感、不会有连续的性能瓶颈；没有频繁的主机（Host）与设备内存（Device）之间的数据交换，保持尽量少的数据交换，使时间尽可能花在GPU计算上；启动开销尽量小，避免启动一堆很小的kernel(例如一个kernel只计算几微秒)，把时间浪费在launch kernel上.</p>
+<ol start="2">
+<li>充分利用GPU的<strong>计算</strong>以及<strong>访存带宽</strong>能力</li>
+</ol>
+<p>总之，我们需要一个定量的性能评价模型，而不是定性的类似“性能不错”这样的评价。例如，达到了GPU计算峰值的80%、利用了70%的访存带宽等。</p>
+<h1>什麽是roofline模型</h1>
+<p>roofline模型是一个面向吞吐量的性能模型<br>
+关注“率（rates）”而不是时间（time），例如flop rate（GFLOP/s）、bytes per second rate（GB/s）<br>
+与架构无关，可以应用于CPU、GPU、DCU、Google TPU、FPGA等等</p>
+<h1>怎样使用roofline模型分析性能？</h1>
+<h2>（DRAM） roofline model简化模型</h2>
+<p>首先我们对代码运行的计算机架构进行简单建模：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9f8053610f2cfd4e7665142411bfaee83ca6b10884e0193ddd198c068d1e642a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431323931332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9f8053610f2cfd4e7665142411bfaee83ca6b10884e0193ddd198c068d1e642a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431323931332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131412913.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>首先假设当数据位于L1 Cache中时，SM通常可以达到计算能力峰值（此处举例为GFLOP/s）</p>
+<p>假设在单一程序多数据流（SPMD, Single Program Multiple Data），所有的SM运行时都是负载均衡的，将它们合并，进行进一步简化<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/331fc73bf8863f0ad0676656ee3626c9b6886766cbe9b7855970b8da0265d07f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431383337362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/331fc73bf8863f0ad0676656ee3626c9b6886766cbe9b7855970b8da0265d07f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431383337362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131418376.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>最后假设有足够的Cache空间以及访存带宽，即性能不会因为Cache空间不足以及访存带宽不够而被影响，基于此将模型再次简化:<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3c8a49e8f7fff69fe09c1922baf7b906805709872d345c547a8c7ac949cb6c52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431393933352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/3c8a49e8f7fff69fe09c1922baf7b906805709872d345c547a8c7ac949cb6c52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313431393933352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131419935.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>对于简化后的模型来说，能够影响性能的只有我们写的代码能算多快以及在主机端和设备端之间传输数据的速度有多快。我们将上面的模型叫做<strong>DRAM roofline model</strong>。</p>
+<p>此时对于需要分析的任意一个程序或者Kernel，我们只需要考虑两个方面：</p>
+<ol>
+<li>Computation (e.g. FLOPs)</li>
+<li>Communication (e.g. moving data to/from DRAM)</li>
+</ol>
+<h2>（DRAM） roofline model基本公式</h2>
+<p>假设数据传输时间和运算时间可以完美重叠，那么我们的代码耗时应为：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9f4a1bc33fa0a5a47ca3fd3b3cf74a7dfee9150a4556402691da559ce385451e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432333036392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9f4a1bc33fa0a5a47ca3fd3b3cf74a7dfee9150a4556402691da559ce385451e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432333036392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131423069.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>FLOPS / Peak GFLOP/s 是理论计算时间，即浮点操作数量除以峰值计算速度， Bytes  /  Peak GB/s 是理论访存时间，即需要从DRAM中存入以及读取的数据总量的Bytes除以DRAM峰值带宽。<br>
+前面提到roofline模型主要关注“率”，因此对上面公式进行变形，得到：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/bee805576b32f5d1c623fbe15037b7c9be464f3954b19d490dbb81c126126233/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432373838352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/bee805576b32f5d1c623fbe15037b7c9be464f3954b19d490dbb81c126126233/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432373838352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131427885.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>也就是：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0d444288bc624cfdd2aa0e1248e78f88d22c99409f7b284e0924ad626cae7d6b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432383339302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/0d444288bc624cfdd2aa0e1248e78f88d22c99409f7b284e0924ad626cae7d6b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432383339302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131428390.png?imageSlim" style="max-width: 100%;"></a><br>
+最终：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5a6ce221d3f0a3fc8da7cea882bb5c00a7d7e9b465abde8e533346ca15275b81/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432383231382e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/5a6ce221d3f0a3fc8da7cea882bb5c00a7d7e9b465abde8e533346ca15275b81/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313432383231382e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131428218.png?imageSlim" style="max-width: 100%;"></a><br>
+AI (Arithmetic Intensity) = FLOPs / Bytes (as presented to DRAM )  计算访存比<br>
+上面的公式就是roofline模型的基本公式，其中AI(Arithmetic Intensity)=FLOPs/Bytes=计算量/访存量，表示计算密度。当代码的计算量远大于访存量，我们说他是计算密集型的，当访存量远大于计算量，则说他是访存密集型的。</p>
+<h2>（DRAM） roofline model图像</h2>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f057a3ca38eaa0de3b43eff2d5eb6cd68c4b8b9e3f03f3c35c78e627fc35b5c8/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313433323930312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f057a3ca38eaa0de3b43eff2d5eb6cd68c4b8b9e3f03f3c35c78e627fc35b5c8/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313433323930312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131432901.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>以AI（计算密度）为横坐标，FLOP/s（可达到的浮点性能）为纵坐标，可得出roofline模型图像（因图像长得像屋顶所以叫roofline模型）。蓝色段中，性能受限于理论带宽（即斜率，Peak GB/s），在粉色段中，性能受限于浮点计算峰值性能（Peak GFLOP/s）。图中的转折点的横坐标 称作“Machine Balance”，其表征了硬件架构的特点，而Arithmetic Intensity（计算密度）表征了我们的代码/应用的特点。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0a5d76f8e6f284a1424bb1af2d649aa71f95217d18d984aea45332ecf48d8cbd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313433383837372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/0a5d76f8e6f284a1424bb1af2d649aa71f95217d18d984aea45332ecf48d8cbd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313433383837372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131438877.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>我们大致可以把图像分为5个区域，粉色线以上和蓝色线以左的区域是程序无论如何都无法达到的性能，因为它意味着超过了计算机的峰值计算性能/访存带宽。淡蓝色区域（计算密度小于Machine Balance点）是性能较好的访存密集型程序，这部分程序的访存带宽利用率较高（可能50%或更高），评价访存密集型程序的指标主要选用访存带宽；淡粉色区域（计算密度大于Machine Balance点）是性能较好的计算密集型程序，有较好的数据重用率与数据局部性，这部分程序的浮点性能较高（可能50%或更高），评价计算密集型程序的指标主要选用浮点性能。最后就是可能带宽与浮点性能都低于50%峰值性能的poor performance，如果程序性能处于这个部分，需要考虑优化算法提高性能，达到粉色或者蓝色区域。</p>
+<h2>使用roofline模型分析性能示例</h2>
+<p>对于文章一开始的性能分析图（随机输出kernel性能），我们将其重新组织，计算每个kernel的计算密度，并以计算密度为横坐标，重新排列得到：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/c6f25842c1366a3d8c46bc2172a69d8eefa7373c6b1c6fc0268582a66b93ced0/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313532303933312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/c6f25842c1366a3d8c46bc2172a69d8eefa7373c6b1c6fc0268582a66b93ced0/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313532303933312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131520931.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>将其与roofline模型相比较：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9edd80f87c2733051444417245af03a3f491413fe5d701f13c1df163cee4f757/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313532303338372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9edd80f87c2733051444417245af03a3f491413fe5d701f13c1df163cee4f757/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313532303338372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131520387.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>那些贴近于roofline的kernel较好的利用了计算资源（绿色点点），而那些远离roofline的kernel（红色点点）则是我们重点需要去优化、提高计算资源利用率的。这里需要注意，对比FLOP/s很低的kernel（例如第一个绿点），红点虽然看起来FLOP/s更高，但是比绿点更有优化性价比。因为绿点已经很接近roofline模型了，无法突破机器能提供的最大资源，可能需要费很大的劲儿才能提高一点点（如果不改变计算密度的话）；而红点离roofline还有较远距离，可通过不断优化访存函数、计算函数来提高访存带宽/浮点计算性能利用率。除此之外，如果想要提高FLOP/s很低但是又比较接近roofline的kernel，可以通过改进计算方法/减少数据传输时间来提高计算密度（例如提高空间局部性、提高cache命中率、改进数据结构、数据类型）。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/140aea586ef958683cefbe9f5da5661ae1cd01ee05259635226de798b65fc0c9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313533333437392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/140aea586ef958683cefbe9f5da5661ae1cd01ee05259635226de798b65fc0c9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313533333437392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131533479.png?imageSlim" style="max-width: 100%;"></a></p>
+<h1>有哪些低于roofline的原因？</h1>
+<p>首先，有可能是roofline的图本身的误差：</p>
+<ol>
+<li>kernel的误差：算错了FLOP/s或者算错了Byte、计算密度</li>
+<li>访存带宽和计算峰值线的误差：roofline模型本身对计算机的体系结构做了很大的简化以及一些假设，但实际上影响性能的不只有访存带宽和计算速度，计算机实际能达到的性能/访存带宽可能也只有峰值的80%；并且我们假设了整个系统是负载均衡的，如果运行的代码只利用到20%的SM，那么实际的峰值肯定无法达到roofline，这种情况下需要我们提高GPU的线程利用率。</li>
+<li>roofline可能不只有访存带宽和峰值性能两条线，也许我们缺少了其他的影响因素：
+<ol>
+<li>cache的访存带宽和数据局部性（在一般的roofline中我们假设完美cache，但实际程序运行过程中很难达到这样的情况）</li>
+<li>没有用到FMA指令（优化指令，乘积与累加合并为一条指令）、向量乘指令、张量乘指令</li>
+<li>太多非浮点运算指令</li>
+<li>。。。</li>
+</ol>
+</li>
+</ol>
+<h2>机器特征</h2>
+<p>理论上的roofline性能可能太过于乐观了：</p>
+<ul>
+<li>实际上持续的DRAM bandwith可能远低于理论上的</li>
+<li>CPU可能会处于Turbo模式（允许关闭一些核心，将电力加到其他核心让他们更高频运行，减少CPU的功耗和发热量）或者降频（降低电力消耗，减少对散热装置的需求，高温环境中可以提高系统稳定性，但是以牺牲某些系统性能为代价的）</li>
+<li>在高计算密度的循环代码中，可能会编译失败</li>
+</ul>
+<p>我们需要更加实际的/实验的roofline性能数据作为参考<br>
+例如LBL开发的Empirical Roofline Toolkit:</p>
+<ul>
+<li>描述CPU/GPU系统特征</li>
+<li>实验测量机器的峰值计算性能</li>
+<li>实验测量每个内存层级的访存带宽（DRAM、L1 cache、L2 cache等）</li>
+<li>代码由MPI+OpenMP/CUDA编写，可在多GPU架构上运行进行测试</li>
+</ul>
+<p>测试例：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/b59f55a20e09ad8f8aef3f8f54a34bd03f78e543eb78865abd9ae2e696eb0e5b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535343534312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/b59f55a20e09ad8f8aef3f8f54a34bd03f78e543eb78865abd9ae2e696eb0e5b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535343534312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131554541.png?imageSlim" style="max-width: 100%;"></a><br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/354c41209558f70ca15efc7d0733f5a2dd7a7dc965729e6fa49f05f6e584f450/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535343230352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/354c41209558f70ca15efc7d0733f5a2dd7a7dc965729e6fa49f05f6e584f450/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535343230352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131554205.png?imageSlim" style="max-width: 100%;"></a><br>
+理论vs.实验测量:</p>
+<p>实验测量的访存带宽和峰值浮点计算性能通常比理论上的要低<br>
+实际上的计算密度（AI）可能比我们理论上的要高或者低：</p>
+<p>AI比理论上高：理论的FLOP数：1 C++ FLOP=1 ISA(指令集) FLOP，然而实际上1 C++ FLOP≥1 ISA FLOP（例如除法，C++中一个除法语句转换为指令可能有多条指令来实现除法功能），因此实验测量的计算密度（AI）应该比理论上的AI要大（FLOPs大而Bytes没变），也就是说实验测量的AI应更接近Machine Balance点。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0d025911aa1a3d1e5ffa2076caecf8c58876e23ecef84b10521eec27e0b8f8f3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535363539382e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/0d025911aa1a3d1e5ffa2076caecf8c58876e23ecef84b10521eec27e0b8f8f3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535363539382e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131556598.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>-AI比理论低：当我们不止假设data movement只包含DRAM到计算部件的数据，还考虑cache的影响（换入换出等），那么实际的Bytes可能会更高，导致AI比理论上（简化的模型分析）要低。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/27f563ad24cc817703c152fb1765734f055d73d49126ccc2b31a016e93176728/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535373737312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/27f563ad24cc817703c152fb1765734f055d73d49126ccc2b31a016e93176728/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535373737312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131557771.png?imageSlim" style="max-width: 100%;"></a></p>
+<h2>内存层次和Cache瓶颈</h2>
+<p>计算机有不同层次的存储部件，不同的存储部件之间有不同的访存带宽：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a4cba089266452d52fef18923f52ae3be26136ece06194b38fe5ffca3695baaf/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535393032342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/a4cba089266452d52fef18923f52ae3be26136ece06194b38fe5ffca3695baaf/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535393032342e706e673f696d616765536c696d" alt="image.png|228" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131559024.png?imageSlim" style="max-width: 100%;"></a><br>
+由于访存带宽不同，不同层次存储之间有不同的Machine Balance:<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/44303ef7d9a74d5a27b4bb089bc61500335a43224bcb008080c06fdd7f5db668/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535393638342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/44303ef7d9a74d5a27b4bb089bc61500335a43224bcb008080c06fdd7f5db668/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313535393638342e706e673f696d616765536c696d" alt="image.png|304" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131559684.png?imageSlim" style="max-width: 100%;"></a><br>
+不同层次存储之间还有不同的访存量：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/8bdb3aa85cec2b36394e3e3c042d414696837112a85e97b40e4d1ed43884aa57/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630303530342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/8bdb3aa85cec2b36394e3e3c042d414696837112a85e97b40e4d1ed43884aa57/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630303530342e706e673f696d616765536c696d" alt="image.png|425" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131600504.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>由于访存量不同，不同层次存储之间还有不同的计算密度：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/8a5e1ad82761f15b51191f9b6fe833eee8d7c8fdae4e89a87b2bd890972bba52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630303830372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/8a5e1ad82761f15b51191f9b6fe833eee8d7c8fdae4e89a87b2bd890972bba52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630303830372e706e673f696d616765536c696d" alt="image.png|425" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131600807.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>对于不同的内存层次，我们可以把roofline增加一些项：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a21de0f6d50bd2750dee1eb4af1e7e793a03da290b39e16b3c4a59d52b59e6b5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630313336352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/a21de0f6d50bd2750dee1eb4af1e7e793a03da290b39e16b3c4a59d52b59e6b5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313630313336352e706e673f696d616765536c696d" alt="image.png|500" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131601365.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>可视化新的roofline模型：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/e24e919a47116457c9c9112e68265cb342d416b7ce66b48b18eba8402a6504f0/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631383335352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/e24e919a47116457c9c9112e68265cb342d416b7ce66b48b18eba8402a6504f0/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631383335352e706e673f696d616765536c696d" alt="image.png|450" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131618355.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>需要注意，上面的蓝色点与绿色点实际上是同一个kernel，kernel性能总是取决于所有内存层次界限的最小值，例如上图绿色点的AI * 访存带宽小于蓝色点的，假如充分利用了L2cache的性能（即实际L2层级的kernel点落于绿色roofline线上），那么DRAM层级（HBM）的kernel点就会低于DRAM roofline线。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/38b10e0beebb9b019dc8d16066c29fd59d053b9b40a2ef88bd5e6c21354b6286/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631393336372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/38b10e0beebb9b019dc8d16066c29fd59d053b9b40a2ef88bd5e6c21354b6286/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631393336372e706e673f696d616765536c696d" alt="image.png|475" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131619367.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>如果L2层和HBM层的AI离很远，那么实际上在L2缓存中有非常高的重用率，在上图的例子中，我们访存L2的字节数比直接访存DRAM的字节数多几个数量级，说明L2的命中率很高，只有一部分字节需要从DRAM中拿取。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/920c6443d23c683a250000679388133d9a9475724dc627b06bbb0d09e5855749/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631393333342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/920c6443d23c683a250000679388133d9a9475724dc627b06bbb0d09e5855749/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313631393333342e706e673f696d616765536c696d" alt="image.png|425" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131619334.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>相反，假如L2层和HBM层的AI离得很近，那就意味着数据重用率很低甚至于没有，每次当从L2 cache中移入移出数据时，都需要从DRAM中移入移出，说明L2基本没有发挥到它应该发挥的作用。</p>
+<h2>指令集方面（FMA，vectors，tensors）</h2>
+<p>摩尔定律的逐渐失效使得复杂指令集重新焕发生机，现代cpu和gpu越来越依赖于执行多种操作的特殊(融合)指令(融合常见指令序列)：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/cbb3f131d99f0643319f1f1b27555aa5a25340d3ba65556df458819a945e2754/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632313638352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/cbb3f131d99f0643319f1f1b27555aa5a25340d3ba65556df458819a945e2754/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632313638352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131621685.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>如果一条指令混合了标量计算、向量计算、张量积算，那么性能是他们的加权平均。</p>
+<p>例如假设NVIDA GPU上不同指令的理论峰值性能如下：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5d8af2c2f24c8e585e9ea299846a099fe7d933e334feac49f06d5cea5fbd1f85/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632323435392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/5d8af2c2f24c8e585e9ea299846a099fe7d933e334feac49f06d5cea5fbd1f85/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632323435392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131622459.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>那么整体的实际峰值性能应是不同指令的加权平均：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/984b8393b0f3b84e98dacc70bb80dcce5e239ec748f75c51add4a677f25f8a9f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632323238372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/984b8393b0f3b84e98dacc70bb80dcce5e239ec748f75c51add4a677f25f8a9f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323133313632323238372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412131622287.png?imageSlim" style="max-width: 100%;"></a></p>
+<h2>浮点运算指令不足</h2>
+<p>后续学习完</p>
+<blockquote>
+<p>Ding, Nan, and Samuel Williams. <em>An instruction roofline model for gpus</em>. IEEE, 2019.</p>
+</blockquote>
+<p>在来补充。。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script>
+
+</html>
