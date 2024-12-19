@@ -1033,7 +1033,71 @@ Warp State Statistics（线程束状态统计） 的分析结果，用于了解 
 <p>块大小对性能的影响，每块共享内存用量对性能的影响</p>
 <h3>Source Counters</h3>
 <p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/03af8555e3628e81b53111c9323a4d2c02799eacf5f9dc3afe54efc110aa997f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323534323530312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/03af8555e3628e81b53111c9323a4d2c02799eacf5f9dc3afe54efc110aa997f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323534323530312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219112542501.png?imageSlim" style="max-width: 100%;"></a></p>
-<p>在这个电脑上只有SASS的代码，具体可以看这个BLOG <a href="https://zhuanlan.zhihu.com/p/709873278" rel="nofollow">CUDA MODE</a></p></div>
+<p>在这个电脑上只有SASS的代码，具体可以看这个BLOG <a href="https://zhuanlan.zhihu.com/p/709873278" rel="nofollow">CUDA MODE</a></p>
+<h1>总结</h1>
+<p>使用Nsight Compute进行核函数的性能分析，主要可以概括为以下几个步骤：</p>
+<ol>
+<li><strong>定位性能瓶颈</strong>：通过采集 GPU 执行的详细性能数据，确定性能瓶颈所在（内存、计算、线程分配等）。</li>
+<li><strong>分析关键指标</strong>：重点分析影响性能的指标，如计算效率、内存利用率、线程并行度、指令吞吐量等。</li>
+<li><strong>优化与验证</strong>：针对瓶颈采取优化措施，并通过再次分析验证优化效果。</li>
+</ol>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>性能瓶颈</strong></th>
+<th><strong>关键指标</strong></th>
+<th><strong>优化方法</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>内存带宽不足 (Memory Bound)</strong></td>
+<td>- 全局内存带宽利用率高  <br>- L1/L2 缓存命中率低  <br>- DRAM 利用率低  <br>- 高内存延迟</td>
+<td>- 使用共享内存（Shared Memory）优化访问  <br>- 确保内存访问对齐（Coalesced Memory Access）  <br>- 减少全局内存访问，充分利用寄存器和缓存  <br>- 使用纹理或常量内存访问只读数据</td>
+</tr>
+<tr>
+<td><strong>计算性能不足 (Compute Bound)</strong></td>
+<td>- 指令吞吐率低  <br>- 核心利用率低（FLOPS/SM 利用率低）  <br>- 高访存/计算比  <br>- Pipeline Stall (流水线停顿)</td>
+<td>- 合并冗余计算，提高并行性  <br>- 利用 CUDA 高效数学库（如 cuBLAS、cuFFT）  <br>- 减少条件分支分化，提高 Warp 执行一致性  <br>- 优化数据复用，减少访存需求</td>
+</tr>
+<tr>
+<td><strong>线程占用率不足 (Low Occupancy)</strong></td>
+<td>- 线程占用率（Occupancy）低  <br>- 寄存器和共享内存使用量过高，限制了活跃线程数  <br>- 部分 SM 资源闲置</td>
+<td>- 调整线程块大小（Thread Block Size），确保更高的并行度  <br>- 减少寄存器和共享内存使用  <br>- 增加线程块数量，平衡工作负载  <br>- 使用 <code class="notranslate">launch_bounds</code> 限制资源分配</td>
+</tr>
+<tr>
+<td><strong>Warp 分支分化 (Warp Divergence)</strong></td>
+<td>- Warp 效率低  <br>- 条件分支执行耗时显著  <br>- Warp 中线程执行不同路径</td>
+<td>- 重构条件分支逻辑，减少分支判断  <br>- 使用 Warp 级同步或 Warp Shuffle 优化  <br>- 避免不必要的条件分支逻辑，统一 Warp 内部执行路径</td>
+</tr>
+<tr>
+<td><strong>内存访存效率低 (Memory Latency)</strong></td>
+<td>- L1/L2 缓存命中率低  <br>- 内存访问模式不连续（非 Coalesced Access）  <br>- 高内存访问延迟</td>
+<td>- 优化访存模式，确保内存访问对齐（Coalesced Access）  <br>- 使用共享内存缓存局部数据  <br>- 合理规划线程访问模式，避免不必要的数据重访</td>
+</tr>
+<tr>
+<td><strong>指令吞吐率低 (Instruction Throughput)</strong></td>
+<td>- 核心吞吐率低  <br>- FP16/FP32 吞吐率未达到设备峰值  <br>- 高访存开销影响计算吞吐</td>
+<td>- 使用低精度运算（FP16）优化性能  <br>- 合并访存和计算操作，避免访存/计算切换开销  <br>- 使用矢量化计算，尽量减少每个线程的单独计算</td>
+</tr>
+<tr>
+<td><strong>同步和通信开销 (Synchronization Overhead)</strong></td>
+<td>- 核间同步耗时高  <br>- 使用原子操作频繁  <br>- Host/Device 数据传输时间长</td>
+<td>- 减少线程同步点，优化线程协作方式  <br>- 避免频繁的原子操作，改用共享内存中间处理  <br>- 合并 Host 和 Device 的数据传输，减少 PCIe 通信开销</td>
+</tr>
+<tr>
+<td><strong>负载不均衡 (Load Imbalance)</strong></td>
+<td>- 不同 SM 的执行时间差异显著  <br>- 部分线程块执行时间显著高于其他线程块  <br>- GPU 资源未充分利用</td>
+<td>- 确保工作负载均匀分配到各线程块和 SM  <br>- 重构算法逻辑，避免单线程/单块任务过重  <br>- 使用动态并行性 (Dynamic Parallelism) 动态调整任务分配</td>
+</tr>
+<tr>
+<td><strong>缓存利用率不足 (Cache Utilization)</strong></td>
+<td>- L1/L2 缓存命中率低  <br>- 数据复用性不足，频繁的全局内存访问  <br>- DRAM 访问占比高</td>
+<td>- 通过数据局部性优化提升缓存命中率  <br>- 合理规划线程访问模式，避免缓存冲突  <br>- 增加共享内存使用，存储局部复用数据</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>最后，注意Nsight Compute中的提示，通常都是一些可以优化的点。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
