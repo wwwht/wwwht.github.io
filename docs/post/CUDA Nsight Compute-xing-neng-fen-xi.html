@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="参考：
+https://zhuanlan.zhihu.com/p/707107808
+[BBuf](https://github.com/BBuf/how-to-optim-algorithm-in-cuda/blob/master/cuda-mode/CUDA-MODE%20%E7%AC%AC%E4%B8%80%E8%AF%BE%E8%AF%BE%E5%90%8E%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89.md)
+[官方文档](https://docs.nvidia.com/nsight-compute/NsightCompute/index.html#quickstart)
+
+> [!WARNING]
+>在办公电脑上运行，显卡是RTX 1660Ti，对应的nsight compute版本可能已经比较低了。">
+<meta property="og:title" content="CUDA Nsight Compute性能分析">
+<meta property="og:description" content="参考：
+https://zhuanlan.zhihu.com/p/707107808
+[BBuf](https://github.com/BBuf/how-to-optim-algorithm-in-cuda/blob/master/cuda-mode/CUDA-MODE%20%E7%AC%AC%E4%B8%80%E8%AF%BE%E8%AF%BE%E5%90%8E%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89.md)
+[官方文档](https://docs.nvidia.com/nsight-compute/NsightCompute/index.html#quickstart)
+
+> [!WARNING]
+>在办公电脑上运行，显卡是RTX 1660Ti，对应的nsight compute版本可能已经比较低了。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/CUDA%20Nsight%20Compute-xing-neng-fen-xi.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>CUDA Nsight Compute性能分析</title>
+<link href="//unpkg.com/@wooorm/starry-night@2.1.1/style/both.css" rel="stylesheet" />
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+<style>#postBody{font-size:20px}</style><style>.markdown-alert{padding:0.5rem 1rem;margin-bottom:1rem;border-left:.25em solid var(--borderColor-default,var(--color-border-default));}.markdown-alert .markdown-alert-title {display:flex;font-weight:var(--base-text-weight-medium,500);align-items:center;line-height:1;}.markdown-alert>:first-child {margin-top:0;}.markdown-alert>:last-child {margin-bottom:0;}</style><style>.markdown-alert.markdown-alert-warning {border-left-color:var(--borderColor-attention-emphasis, var(--color-attention-emphasis));background-color:var(--color-attention-subtle);}.markdown-alert.markdown-alert-warning .markdown-alert-title {color: var(--fgColor-attention,var(--color-attention-fg));}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">CUDA Nsight Compute性能分析</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/4" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>参考：<br>
+<a href="https://zhuanlan.zhihu.com/p/707107808" rel="nofollow">https://zhuanlan.zhihu.com/p/707107808</a><br>
+<a href="https://github.com/BBuf/how-to-optim-algorithm-in-cuda/blob/master/cuda-mode/CUDA-MODE%20%E7%AC%AC%E4%B8%80%E8%AF%BE%E8%AF%BE%E5%90%8E%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89.md">BBuf</a><br>
+<a href="https://docs.nvidia.com/nsight-compute/NsightCompute/index.html#quickstart" rel="nofollow">官方文档</a></p>
+<div class="markdown-alert markdown-alert-warning"><p class="markdown-alert-title"><svg class="octicon octicon-alert mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p><p>在办公电脑上运行，显卡是RTX 1660Ti，对应的nsight compute版本可能已经比较低了。</p>
+</div>
+<h1>Nsight Compute简介</h1>
+<p>Nsight Compute是一个CUDA kernel分析器，它通过硬件计数器和软件收集指标。它使用内置的专业知识来检测kernel常见的性能问题并指出发生这些问题的位置并给出一些解决方法的建议。这一内置规则集和指南就是我们所说的Guided Analysis。下面就结合Lecture1的例子来深入了解下Nsight Compute。</p>
+<p>在Nsight Compute中，如果我们把鼠标悬停在各个指标上，我们能获得对应的讲解。</p>
+<h1>Nsight Compute Profile流程</h1>
+<p>BBuf的Blog中使用的是 Triton 实现的矩阵开方代码使用Nsight Compute进行Profile，我们这里使用naive方式的sgemm和cublas的gemm进行实验。打开方式是直接使用管理员权限的Nsight Compute，完全不使用用ncu 命令行。实验环境为Windows专业版，显卡为GTX 1660Ti。<br>
+下面给出naive的kernel代码。</p>
+<div class="highlight highlight-source-c++"><pre class="notranslate">__global__ <span class="pl-k">void</span> <span class="pl-en">naiveSgemm</span>(<span class="pl-k">float</span> *__restrict__ a, <span class="pl-k">float</span> *__restrict__ b,  
+                           <span class="pl-k">float</span> *__restrict__ c, <span class="pl-k">const</span> <span class="pl-k">int</span> M, <span class="pl-k">const</span> <span class="pl-k">int</span> N,  
+                           <span class="pl-k">const</span> <span class="pl-k">int</span> K) {  
+  
+  <span class="pl-k">int</span> n = blockIdx.<span class="pl-smi">x</span> * blockDim.<span class="pl-smi">x</span> + threadIdx.<span class="pl-smi">x</span>;  
+  <span class="pl-k">int</span> m = blockIdx.<span class="pl-smi">y</span> * blockDim.<span class="pl-smi">y</span> + threadIdx.<span class="pl-smi">y</span>;  
+  <span class="pl-k">if</span> (m &lt; M &amp;&amp; n &lt; N) {  
+    <span class="pl-k">float</span> psum = <span class="pl-c1">0.0</span>;  
+#<span class="pl-k">pragma</span> unroll  
+    <span class="pl-k">for</span> (<span class="pl-k">int</span> k = <span class="pl-c1">0</span>; k &lt; K; k++) {  
+      psum += a[<span class="pl-c1">OFFSET</span>(m, k, K)] * b[<span class="pl-c1">OFFSET</span>(k, n, N)];  
+    }    c[<span class="pl-c1">OFFSET</span>(m, n, N)] = psum;  
+  }}</pre></div>
+<p>cublas的代码：</p>
+<div class="highlight highlight-source-c++"><pre class="notranslate"><span class="pl-en">cublasSgemm</span>(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, N, M, K, &amp;cublas_alpha,  
+            d_b, N, d_a, K, &amp;cublas_beta, d_c, N);</pre></div>
+<p>下面开始分析，注意需要管理员权限打开Nsight Compute<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/db3385177dbbc278fbe108b3642143f93bc70772d57f7568e1a426a5f5c1c5ca/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313631323936312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/db3385177dbbc278fbe108b3642143f93bc70772d57f7568e1a426a5f5c1c5ca/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313631323936312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091612961.png?imageSlim" style="max-width: 100%;"></a><br>
+注意Sections选择full</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a912e64a1825c07d48d9182244e3c2ebd033b51512e677d6679f2a4684fcf2b6/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313635363130352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/a912e64a1825c07d48d9182244e3c2ebd033b51512e677d6679f2a4684fcf2b6/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313635363130352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091656105.png?imageSlim" style="max-width: 100%;"></a><br>
+然后直接launch。弹出的terminal上可以看到我们程序的输出。</p>
+<h2>Summary</h2>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6242f49cd3515071932a8b3f3eaa5ba649e3b7a2cdfb94f160a66cf77b1eee96/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730303634392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/6242f49cd3515071932a8b3f3eaa5ba649e3b7a2cdfb94f160a66cf77b1eee96/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730303634392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091700649.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>Summary部分长这样，可以看到我们启动的三个kernel：第一个是warm up，第二个是cublas的实现，第三个是我们的naive cuda实现。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/41c7bdfa99c6095dfee88b1b43577cb53a9b27e056d262930ff328fa9ba41b6e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730343035322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/41c7bdfa99c6095dfee88b1b43577cb53a9b27e056d262930ff328fa9ba41b6e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730343035322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091704052.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>使用page可以切换不同的界面，我们先看Summary<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/77b5e3aa7241c173c3e81568a4a1320be58056f896b86bb15da1016b69e1f5dd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730353735302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/77b5e3aa7241c173c3e81568a4a1320be58056f896b86bb15da1016b69e1f5dd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313730353735302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091705750.png?imageSlim" style="max-width: 100%;"></a><br>
+这部分内容是选中kernel的一些信息，先混个脸熟。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Result</th>
+<th>Kernel名字</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time</td>
+<td>Kernel耗时</td>
+</tr>
+<tr>
+<td>Cycles</td>
+<td>时钟周期数</td>
+</tr>
+<tr>
+<td>Regs</td>
+<td>每个thread分配的寄存器数</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>显卡型号</td>
+</tr>
+<tr>
+<td>SM Frequency</td>
+<td>SM频率，单位是GHz</td>
+</tr>
+<tr>
+<td>CC</td>
+<td>GPU架构号，7.5表示Turing 架构</td>
+</tr>
+<tr>
+<td>Process</td>
+<td>可执行文件的名称</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/757323931dc49c6037722167ccc9146fb921c1d7a79c5c5e9f6bd0a620cff1e5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313732343131342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/757323931dc49c6037722167ccc9146fb921c1d7a79c5c5e9f6bd0a620cff1e5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f3230323431323039313732343131342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202412091724114.png?imageSlim" style="max-width: 100%;"></a><br>
+下面是表示这个Summary选择下可以看到的Profile程序里面有哪些Kernel。下面是指标的一些含义，同样现在不需要了解每个的具体含义。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th></th>
+<th><strong>ID</strong></th>
+<th>每个函数的唯一标识符</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td><strong>Issue Detected</strong></td>
+<td>检测到的问题数量</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Function Name</strong></td>
+<td>函数的名称</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Demangled Name</strong></td>
+<td>去掉修饰符的函数名称</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Duration (ms)</strong></td>
+<td>函数执行时间</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Compute Throughput</strong></td>
+<td>计算吞吐量</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Memory Throughput</strong></td>
+<td>内存吞吐量</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Registers</strong></td>
+<td>每个线程使用的寄存器数量</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>GridSize</strong></td>
+<td>kernel启动的网格大小</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>BlockSize</strong></td>
+<td>每个Block的线程数</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>Cycles</strong></td>
+<td>指令周期</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>Compute Throughput</h3>
+<p>在 CUDA 中，<strong>Compute Throughput 百分比</strong> 是衡量 GPU 计算单元（SM, Streaming Multiprocessor）的利用率的指标。<br>
+鼠标悬停在这一指标时，会出现如下提示：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5b58191b05a6af0ceb40a145814285bf567f8e95a1776d706df1ce79e7648c97/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137313233303333392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/5b58191b05a6af0ceb40a145814285bf567f8e95a1776d706df1ce79e7648c97/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137313233303333392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241218171230339.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>同 SM Throughput，SM（流式多处理器）是 GPU 的基本计算单元，负责并行执行 CUDA 程序中的大量线程。每个 SM 可以并行地执行多个<strong>warp</strong>，并且每个 warp 包含 32 个线程。每个 SM 有一定数量的计算资源（如 ALU、寄存器、共享内存等），这些资源用于执行程序中的指令。</p>
+<ul>
+<li><strong>Warp</strong> 是 32 个线程的组合，它们在同一周期内执行相同的指令。</li>
+<li><strong>CTA</strong>（Cooperative Thread Array）或线程块，是由多个 warp 组成的</li>
+<li><strong>SMSPs</strong>：每个SM被划分为四个处理块，称为SM子分区。 SM子分区是SM上的主要处理单元。 一个子分区管理一个固定大小的warp池。</li>
+</ul>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d7da44e5a805dbe4cc90742805e9b3c96ba8641f9ea7976bf6be9c061caee32a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137323031323435352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d7da44e5a805dbe4cc90742805e9b3c96ba8641f9ea7976bf6be9c061caee32a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137323031323435352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241218172012455.png?imageSlim" style="max-width: 100%;"></a><br>
+计算步骤：<br>
+计算 Compute Throughput 百分比涉及以下几个步骤：</p>
+<p>Step 1: <strong>获取 GPU 的理论最大 FLOPS</strong><br>
+首先，你需要知道 GPU 的规格，包括以下信息：</p>
+<ul>
+<li><strong>SM 核心数量</strong>：例如 NVIDIA A100 有 108 个 SM，每个 SM 包含 64 个 CUDA 核心，总共 6912 个 CUDA 核心。</li>
+<li><strong>时钟频率</strong>：例如 A100 的基础时钟频率是 1410 MHz（1.41 GHz）。</li>
+<li><strong>每周期浮点操作数</strong>：每个 CUDA 核心通常可以在每个时钟周期执行 2 次浮点操作（一次 FMA）。</li>
+</ul>
+<p>理论 FLOPS 计算公式：</p>
+<p>$$
+\text{理论 FLOPS} = \text{核心数量} \times 2 \times \text{时钟频率 (Hz)}
+$$</p>
+<p><strong>示例：</strong></p>
+<ul>
+<li>GPU：NVIDIA A100</li>
+<li>核心数：6912</li>
+<li>时钟频率：1.41 GHz</li>
+<li>理论 FLOPS：</li>
+</ul>
+<p>$$
+6912×2×1.41×10^9=19.47 TFLOPS
+$$</p>
+<p>Step 2: <strong>计算实际执行的计算操作数（FLOP）</strong><br>
+实际的 FLOP 需要通过程序运行时收集，常用的方法包括：</p>
+<ul>
+<li><strong>使用 CUDA Profiler 工具</strong>：
+<ul>
+<li><code class="notranslate">Nsight Compute</code> 和 <code class="notranslate">nvprof</code> 可以记录 CUDA 核函数执行的 FLOP 数。</li>
+<li>FLOP 的具体计数通常包含单精度 (FP32)、双精度 (FP64) 和混合精度 (Tensor Core) 的统计数据。</li>
+</ul>
+</li>
+<li><strong>手动估算</strong>： 如果你清楚代码中执行的计算逻辑，可以估算每次循环或每个线程的浮点操作数，再乘以线程总数和循环次数。</li>
+</ul>
+<p>Step 3: 计算 Compute Throughput%</p>
+<h3>Memory Throughput</h3>
+<p>Memory Throughput 百分比 是衡量 CUDA 程序运行时 GPU 内存带宽利用效率的一个关键指标。通过计算 Memory Throughput 百分比，可以评估程序对 GPU 全局内存、共享内存或其他存储资源的访问效率，从而识别内存相关的性能瓶颈并进行优化。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0321179e6bfd34e90205ee121521bd9ec00412c0ecb6fcb2c3d452f295b89240/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137333332303439342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/0321179e6bfd34e90205ee121521bd9ec00412c0ecb6fcb2c3d452f295b89240/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231383137333332303439342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241218173320494.png?imageSlim" style="max-width: 100%;"></a><br>
+计算内存管道吞吐量 （此吞吐量指标表示在所有子单元实例的经过周期内达到的峰值持续率的百分比）</p>
+<h3>Registers</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/afa6608969a216efa955303c8f1bc3c5b52aac937dafd158429977be08d7f368/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393038353332323039352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/afa6608969a216efa955303c8f1bc3c5b52aac937dafd158429977be08d7f368/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393038353332323039352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219085322095.png?imageSlim" style="max-width: 100%;"></a><br>
+寄存器：每个子分区有一组32位寄存器，由硬件以固定大小的块分配。</p>
+<p>线程：在GPU的一个SM单元上运行的单个线程。</p>
+<h3>Cycles</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/eceed81ebe99f89811d3890124c4778b9de04139f51e2f30cf839982aee0c4db/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393038353435363431342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/eceed81ebe99f89811d3890124c4778b9de04139f51e2f30cf839982aee0c4db/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393038353435363431342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219085456414.png?imageSlim" style="max-width: 100%;"></a><br>
+CUDA程序在GPU上运行时，每个指令都需要一定的硬件时钟周期来完成。一个cycle代表一个时钟信号的周期，是GPU硬件执行工作的基本时间单位。<br>
+Warp执行与Cycles： GPU的基本调度单位是warp（一组32个线程）。在CUDA中，warp中的所有线程是同步执行的（SIMD模型）。一个指令执行完成需要一定数量的cycles。</p>
+<p>延迟与吞吐量： 一些CUDA指令（如内存读取、计算指令）可能需要多个周期（cycles）才能完成。这取决于指令类型、寄存器访问、线程分支情况以及内存访问模式等。</p>
+<h2>Details</h2>
+<h3>GPU Speed Of Light Throughput</h3>
+<p>首先是 GPU Speed Of Light Throughput部分，它通常位于Details部分的顶部。它清晰的描述了GPU资源的利用情况。在下面的截图中，我们同样可以通过鼠标悬停的方式去看每个指标的细节。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/8f80e2ab5b7bf3440b274eda1718da051bf79eba0a36fa6ca0ee2aed249cbe52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039313232383831372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/8f80e2ab5b7bf3440b274eda1718da051bf79eba0a36fa6ca0ee2aed249cbe52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039313232383831372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219091228817.png?imageSlim" style="max-width: 100%;"></a></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>指标</th>
+<th>说明</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compute (SM) Throughput [%]</td>
+<td>计算单元 (Streaming Multiprocessors, SM) 的吞吐量占理论峰值的百分比。</td>
+<td><strong>77.89%</strong> 表示当前任务利用了理论计算能力的 77.89%。</td>
+</tr>
+<tr>
+<td>Memory Throughput [%]</td>
+<td>GPU 全局内存（Global Memory）的吞吐量占理论最大值的百分比。</td>
+<td><strong>77.89%</strong> 表示当前任务利用了 GPU 全局内存带宽的 77.89%。</td>
+</tr>
+<tr>
+<td>L1/TEX Cache Throughput [%]</td>
+<td>L1 缓存和纹理缓存的吞吐量占理论最大值的百分比。</td>
+<td><strong>78.16%</strong> 表示该缓存的使用接近理论最大值。</td>
+</tr>
+<tr>
+<td>L2 Cache Throughput [%]</td>
+<td>L2 缓存的吞吐量占理论最大值的百分比。</td>
+<td><strong>10.45%</strong> 表示二级缓存利用率较低，说明大部分内存访问可能直接从全局内存（DRAM）读取，或缓存未被充分利用。</td>
+</tr>
+<tr>
+<td>DRAM Throughput [%]</td>
+<td>GPU 显存（DRAM）的吞吐量占理论最大值的百分比。</td>
+<td><strong>11.22%</strong> 表明显存带宽使用率很低，可能是因为大部分数据通过缓存访问，未直接涉及显存。</td>
+</tr>
+<tr>
+<td>Duration [msecond]</td>
+<td>执行时间，以毫秒为单位。</td>
+<td></td>
+</tr>
+<tr>
+<td>Elapsed Cycles [cycle]</td>
+<td>GPU 执行内核时的总耗费周期数。</td>
+<td></td>
+</tr>
+<tr>
+<td>SM Active Cycles [cycle]</td>
+<td>Streaming Multiprocessor（SM）处于活动状态的周期数。</td>
+<td></td>
+</tr>
+<tr>
+<td>SM Frequency [cycle/nsecond]</td>
+<td>SM 的工作频率（每纳秒的时钟周期数）。</td>
+<td></td>
+</tr>
+<tr>
+<td>DRAM Frequency [cycle/nsecond]</td>
+<td>DRAM 的工作频率（每纳秒的时钟周期数）。</td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>Balanced Throughput</strong>： 平衡吞吐量的提示，此处计算吞吐量与内存吞吐量都约为 77.89%，表明任务优化良好，避免了瓶颈。<br>
+<strong>Roofline Analysis</strong>：当前设备的 fp32（单精度浮点）与 fp64（双精度浮点）性能比为 <strong>32:1</strong>。此内核只达到了设备 fp32 峰值性能的 10%，说明仍有优化空间。双精度性能（fp64）未被利用（达成 0% 峰值性能）。</p>
+<p>下面这些了解一下就行，暂时还没有用到。</p>
+<p><strong>Compute Throughput Breakdown</strong></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM: Inst Executed Pipe Lsu [%]</td>
+<td>Load/Store 单元 (LSU) 执行的指令占比。表示内存加载和存储操作的利用率。</td>
+</tr>
+<tr>
+<td>SM: Issue Active [%]</td>
+<td>指令发射器 (Issue Unit) 的活跃时间百分比。表示 GPU 核心忙于分派指令的时间比例。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed [%]</td>
+<td>实际执行的指令占比。反映 GPU 核心的整体计算工作量。</td>
+</tr>
+<tr>
+<td>SM: Mio Inst Issued [%]</td>
+<td>MIO 单元（算术逻辑运算单元）发出的指令占比。</td>
+</tr>
+<tr>
+<td>SM: Pipe Fma Cycles Active [%]</td>
+<td>FMA（浮点融合乘加）管道的活跃周期百分比。表示浮点运算性能的利用率。</td>
+</tr>
+<tr>
+<td>SM: Mio2Rf Writeback Active [%]</td>
+<td>数据从 MIO 单元写回寄存器的活跃时间百分比。</td>
+</tr>
+<tr>
+<td>SM: Pipe Alu Cycles Active [%]</td>
+<td>ALU（算术逻辑单元）管道的活跃周期百分比，表示算术和逻辑运算的占比。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Adu [%]</td>
+<td>ADD 单元（加法运算单元）指令执行占比。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Cbu Pred On Any [%]</td>
+<td>CBU（条件分支单元）执行带谓词的指令占比。</td>
+</tr>
+<tr>
+<td>SM: Mio Pq Read Cycles Active [%]</td>
+<td>从 PQ 单元读取的活跃周期百分比。</td>
+</tr>
+<tr>
+<td>SM: Mio Pq Write Cycles Active [%]</td>
+<td>向 PQ 单元写入的活跃周期百分比。</td>
+</tr>
+<tr>
+<td>IDC: Request Cycles Active [%]</td>
+<td>数据传输请求（Interconnect Data Communication）的活跃周期百分比。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Fp16 [%]</td>
+<td>FP16（半精度浮点）指令执行占比。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Ipa [%]</td>
+<td>IPA（整数加法单元）指令执行占比。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Tex [%]</td>
+<td>纹理单元的指令执行占比，表示纹理处理的利用率。</td>
+</tr>
+<tr>
+<td>SM: Inst Executed Pipe Uniform [%]</td>
+<td>Uniform（统一变量）处理单元的指令执行占比。</td>
+</tr>
+<tr>
+<td>SM: Pipe Fp64 Cycles Active [%]</td>
+<td>FP64（双精度浮点）管道的活跃周期百分比。</td>
+</tr>
+<tr>
+<td>SM: Pipe Shared Cycles Active [%]</td>
+<td>共享内存操作管道的活跃周期百分比。</td>
+</tr>
+<tr>
+<td>SM: Pipe Tensor Cycles Active [%]</td>
+<td>Tensor Core（张量核心）的活跃周期百分比。</td>
+</tr>
+<tr>
+<td><strong>Memory Throughput Breakdown</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1: Lsuin Requests [%]</td>
+<td>L1 缓存中 LSU 请求的占比。反映一级缓存中加载和存储操作的利用率。</td>
+</tr>
+<tr>
+<td>L1: Data Pipe LSU Wavefronts [%]</td>
+<td>LSU 数据管道的波前利用率。</td>
+</tr>
+<tr>
+<td>L1: Lsu Writeback Active [%]</td>
+<td>从 L1 缓存写回的数据占比。</td>
+</tr>
+<tr>
+<td>DRAM: Cycles Active [%]</td>
+<td>DRAM（显存）处于活跃状态的周期占比。</td>
+</tr>
+<tr>
+<td>L2: T Sectors [%]</td>
+<td>L2 缓存的扇区使用占比。表示 L2 缓存的数据吞吐量情况。</td>
+</tr>
+<tr>
+<td>L2: Lts2xbar Cycles Active [%]</td>
+<td>从 L2 缓存到 XBAR（交叉开关）的活跃周期占比。</td>
+</tr>
+<tr>
+<td>L1: Data Bank Reads [%]</td>
+<td>L1 数据存储模块读取的占比。</td>
+</tr>
+<tr>
+<td>L2: Xbar2lts Cycles Active [%]</td>
+<td>从 XBAR 到 L2 缓存的活跃周期占比。</td>
+</tr>
+<tr>
+<td>L1: T Tag Requests [%]</td>
+<td>L1 缓存的标签请求占比，表示缓存命中的操作频率。</td>
+</tr>
+<tr>
+<td>DRAM: Dram Sectors [%]</td>
+<td>DRAM 使用的扇区占比，反映显存的访问频率。</td>
+</tr>
+<tr>
+<td>L2: D Sectors Fill Device [%]</td>
+<td>L2 缓存从设备填充的扇区占比。</td>
+</tr>
+<tr>
+<td>L2: D Sectors Fill System [%]</td>
+<td>L2 缓存从系统填充的扇区占比。</td>
+</tr>
+<tr>
+<td>M: Xbar2lttex Read Sectors [%]</td>
+<td>交叉开关到纹理单元的读取扇区占比。</td>
+</tr>
+<tr>
+<td>L1: Data Bank Writes [%]</td>
+<td>L1 数据存储模块写入的占比。</td>
+</tr>
+<tr>
+<td>L1: F Wavefronts [%]</td>
+<td>一级缓存中的波前频率，表示缓存处理多个并行任务的能力。</td>
+</tr>
+<tr>
+<td>L1: Texin Sm2tex Reg Cycles Active [%]</td>
+<td>SM 到纹理单元（Texture）寄存器访问的活跃周期占比。</td>
+</tr>
+<tr>
+<td>L1: Data Pipe Tex Wavefronts [%]</td>
+<td>纹理管道的波前占比。</td>
+</tr>
+<tr>
+<td>L1: Tex Writeback Active [%]</td>
+<td>L1 缓存纹理写回的活跃状态百分比。</td>
+</tr>
+<tr>
+<td>L2: D Atomic Input Cycles Active [%]</td>
+<td>L2 缓存原子操作（Atomic Operations）的活跃周期占比。</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>接下来是Roofline</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d66427f56d419f87e3002239244384041ad1aa4e0290157fc1f090c5bdb0d1c9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039333330313936372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d66427f56d419f87e3002239244384041ad1aa4e0290157fc1f090c5bdb0d1c9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039333330313936372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219093301967.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>关于roofline的可以看另一个blog，有详细的讲解。<br>
+可以看到naiveSgemm的内存访问和计算都有优化的空间。</p>
+<h3>Compute Workload Analysis</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/44fac1ac9b90f0cc7c6412733f1a59bd56d17c26808f30c7d2b2ea7ed7d87d4b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039343632353839372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/44fac1ac9b90f0cc7c6412733f1a59bd56d17c26808f30c7d2b2ea7ed7d87d4b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039343632353839372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219094625897.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><strong>总体指标</strong></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Executed Ipc Elapsed [inst/cycle]</strong></td>
+<td>已执行的每周期指令数（IPC，Instructions Per Cycle），反映 GPU 的整体执行效率。值为 <strong>1.17</strong>。</td>
+</tr>
+<tr>
+<td><strong>Executed Ipc Active [inst/cycle]</strong></td>
+<td>在活跃状态下的每周期指令数，表示仅统计 GPU 核心在忙碌时的执行效率。值为 <strong>1.18</strong>。</td>
+</tr>
+<tr>
+<td><strong>Issued Ipc Active [inst/cycle]</strong></td>
+<td>活跃时发出的每周期指令数，表示指令分发效率。值为 <strong>1.18</strong>。</td>
+</tr>
+<tr>
+<td><strong>SM Busy [%]</strong></td>
+<td>Streaming Multiprocessors（SM）处于忙碌状态的时间占比。值为 <strong>29.42%</strong>，表明当前任务的活跃时间。</td>
+</tr>
+<tr>
+<td><strong>Issue Slots Busy [%]</strong></td>
+<td>指令分发槽的使用时间占比。值为 <strong>29.42%</strong>，表示指令调度槽在任务中的占用率。</td>
+</tr>
+<tr>
+<td><strong>管道利用率（Pipe Utilization）</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>管道</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LSU</strong></td>
+<td>Load/Store Unit（加载/存储单元），用于处理内存加载和存储操作。当前任务利用率为 <strong>78.2%</strong>，说明内存操作占用比重大，可能成为瓶颈。</td>
+</tr>
+<tr>
+<td><strong>FMA</strong></td>
+<td>Fused Multiply-Add（浮点乘加单元），用于执行浮点运算的核心组件。利用率为 <strong>约 50%</strong>，说明浮点运算有一定占比。</td>
+</tr>
+<tr>
+<td><strong>ALU</strong></td>
+<td>Arithmetic Logic Unit（算术逻辑单元），用于整数运算和逻辑操作。利用率为 <strong>约 30%</strong>，说明整数运算需求较少。</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>分析与优化方向：</strong><br>
+<strong>内存瓶颈：LSU</strong> 利用率达到 <strong>78.2%</strong>，显著高于其他管道，说明内存加载/存储操作是当前任务的主要性能瓶颈。<br>
+优化方向：</p>
+<ul>
+<li>减少不必要的内存访问，增加数据局部性（使用共享内存或缓存）。</li>
+<li>合并内存操作，减少内存访存的频率。</li>
+</ul>
+<p><strong>计算单元</strong>：<strong>FMA</strong> 和 <strong>ALU</strong> 管道的利用率尚未达到满负载，说明计算性能尚未完全释放。<br>
+优化方向：</p>
+<ul>
+<li>增加浮点运算和整数运算的并行度。</li>
+<li>优化核函数（Kernel）代码逻辑，提升计算密集度。</li>
+</ul>
+<p><strong>整体利用率</strong>：<strong>SM Busy</strong> 和 <strong>Issue Slots Busy</strong> 均为 <strong>29.42%</strong>，表明 GPU 的整体利用率较低。<br>
+优化方向：</p>
+<ul>
+<li>提高任务的线程并行度。</li>
+<li>减少线程阻塞和数据依赖，提高 GPU 核心的占用率</li>
+</ul>
+<h3>Memory Workload Analysis</h3>
+<p><strong>Memory Workload Analysis（内存工作负载分析）</strong>，用于分析 GPU 的内存资源利用情况，包括内存访问模式、带宽使用情况以及潜在的内存瓶颈。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/55070b5c2f53c014c3fb1b63e5a08b43f5e4590f5c0b06dbe161263f2fb3d259/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039353433313536302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/55070b5c2f53c014c3fb1b63e5a08b43f5e4590f5c0b06dbe161263f2fb3d259/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393039353433313536302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219095431560.png?imageSlim" style="max-width: 100%;"></a></p>
+<h4><strong>顶部主要指标</strong></h4>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Memory Throughput [Gbyte/second]</strong></td>
+<td>GPU 的实际内存吞吐量，以 GB/s 为单位，表示当前任务的内存读写速度。反映了内存带宽的实际利用情况。</td>
+<td><strong>30.93</strong> GB/s</td>
+</tr>
+<tr>
+<td><strong>L1/TEX Hit Rate [%]</strong></td>
+<td>一级缓存（L1 缓存）或纹理缓存（TEX 缓存）的命中率，表示内存访问请求被缓存命中的百分比。较高的命中率说明缓存利用较好。</td>
+<td><strong>94.93%</strong></td>
+</tr>
+<tr>
+<td><strong>L2 Hit Rate [%]</strong></td>
+<td>二级缓存（L2 缓存）的命中率，表示从 L2 缓存获取数据的比率，而不是直接访问显存（DRAM）。较高的命中率可以减少显存访问开销。</td>
+<td><strong>77.89%</strong></td>
+</tr>
+<tr>
+<td><strong>Mem Busy [%]</strong></td>
+<td>内存硬件资源的繁忙时间占比，表示显存模块在执行任务时的繁忙程度。高值可能表明内存已经成为性能瓶颈。</td>
+<td><strong>38.95%</strong></td>
+</tr>
+<tr>
+<td><strong>Mem Pipes Busy [%]</strong></td>
+<td>内存管道（Memory Pipes）的繁忙时间占比，表示内存读写请求占用管道资源的情况。高值可能意味着内存带宽的瓶颈。</td>
+<td><strong>49.22%</strong></td>
+</tr>
+<tr>
+<td><strong>Max Bandwidth [%]</strong></td>
+<td> 计算内存管道：SM&lt;-&gt;缓存&lt;-&gt;DRAM之间互连的吞吐量 （这个吞吐量指标表示在所有子单元实例的经过周期内达到的峰值持续速率的百分比）</td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>L2 Load Access Pattern: 这部分详细描述了从 L1/TEX 缓存加载到 L2 缓存时的访问模式</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Sectors per L2 Request</strong></td>
+<td>每次从 L1 缓存向 L2 缓存发出的请求所访问的扇区数量（一个 L2 缓存行包含 4 个扇区，每个扇区大小为 32 字节）。理想情况下应该是 4 扇区全被利用。</td>
+<td><strong>1.6</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>当前分析：Sectors per L2 Request 为 1.6，远小于 4。说明内存访问模式未能充分利用 L2 缓存行，每次加载的数据块较小，导致带宽浪费或缓存效率低下。原因可能是 <strong>非合并内存访问（Uncoalesced Accesses）</strong>，即多个线程对不连续的内存地址进行访问。</p>
+<p>接下来是Memory Chart：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/53943f5b3db161590af029bb15171d24e6e6fc7fe38540462e5eb7394dd5d73e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130313034343438332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/53943f5b3db161590af029bb15171d24e6e6fc7fe38540462e5eb7394dd5d73e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130313034343438332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219101044483.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>任务的大部分内存请求都集中在 <strong>全局内存</strong>，共发起了 <strong>268.44M 请求</strong>，可能是性能瓶颈的主要来源。<br>
+L1 缓存：高命中率（94.93%），有效减少了对全局内存的访问，但仍有部分请求流入 L2 缓存。<br>
+L2 缓存：命中率较低（49.22%），需要优化数据访问模式，进一步减少全局内存访问。<br>
+内存瓶颈：<br>
+全局内存（Device Memory）的流量较高（573.34 MB），可能导致较高的延迟。</p>
+<h3>Scheduler Statistics</h3>
+<p><strong>Scheduler Statistics（调度器统计）</strong> 的分析结果，用于评估 GPU 的线程调度器在内核执行期间的活跃度和利用率。调度器是 GPU 的核心组件之一，负责管理和调度多个线程组（即 <strong>warps</strong>）执行指令。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3fd11300231b10072f1a9f2903bf48d32e660f24a2a94b2996154c967bfd2212/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130323034323832392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/3fd11300231b10072f1a9f2903bf48d32e660f24a2a94b2996154c967bfd2212/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130323034323832392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219102042829.png?imageSlim" style="max-width: 100%;"></a></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Active Warps Per Scheduler [warp]</strong></td>
+<td>每个调度器当前活跃的 Warp（线程束）数量，表示调度器正在管理的 Warp 数量。这些 Warp 可能正在执行，也可能因为等待资源或数据而停顿。</td>
+<td><strong>7.99</strong></td>
+</tr>
+<tr>
+<td><strong>Eligible Warps Per Scheduler [warp]</strong></td>
+<td>每个调度器中可以发出指令的 Warp 数量，即那些准备好执行下一条指令的 Warp。Eligible Warp 是 Active Warp 的子集，反映了 Warp 的执行效率。</td>
+<td><strong>0.74</strong></td>
+</tr>
+<tr>
+<td><strong>Issued Warp Per Scheduler [warp]</strong></td>
+<td>每个调度器中实际发出指令的 Warp 数量，即每个周期中调度器真正调度的 Warp 数量。数值较低可能表明 Warp 受阻或调度器未充分利用。</td>
+<td><strong>0.29</strong></td>
+</tr>
+<tr>
+<td><strong>No Eligible [%]</strong></td>
+<td>调度器周期中没有可调度 Warp 的时间比例。当这个值高时，说明许多 Warp 处于停顿状态，可能因为内存延迟或其他资源争用导致。</td>
+<td><strong>70.56%</strong></td>
+</tr>
+<tr>
+<td><strong>One or More Eligible [%]</strong></td>
+<td>调度器周期中至少有一个 Warp 准备好发出指令的时间比例。当这个值低时，说明 Warp 停顿严重，调度器资源未被充分利用。</td>
+<td><strong>29.44%</strong></td>
+</tr>
+<tr>
+<td>柱状图：</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>柱状图类别</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GPU Maximum Warps Per Scheduler</strong></td>
+<td>每个调度器的理论最大 Warp 数量（硬件支持的上限）。当前值为 <strong>8 warp</strong>，这是每个调度器可以并行管理的最大 Warp 数量。</td>
+<td><strong>8</strong></td>
+</tr>
+<tr>
+<td><strong>Theoretical Warps Per Scheduler</strong></td>
+<td>理论上的 Warp 数量，受任务配置（如线程块大小和占用率）限制。当前任务的理论值为 <strong>8 warp</strong>，与硬件支持的上限相同。</td>
+<td><strong>8</strong></td>
+</tr>
+<tr>
+<td><strong>Active Warps Per Scheduler</strong></td>
+<td>每个调度器当前管理的活跃 Warp 数量，表示参与任务执行的 Warp 数量。当前值为 <strong>7.99 warp</strong>，说明调度器几乎达到了满负载。</td>
+<td><strong>7.99</strong></td>
+</tr>
+<tr>
+<td><strong>Eligible Warps Per Scheduler</strong></td>
+<td>每个调度器中可以发出指令的 Warp 数量，表示准备好执行指令的 Warp。当前值为 <strong>0.74 warp</strong>，说明绝大多数 Warp 处于非 Eligible 状态（可能因停顿而等待）。</td>
+<td><strong>0.74</strong></td>
+</tr>
+<tr>
+<td><strong>Issued Warp Per Scheduler</strong></td>
+<td>每个调度器中实际发出指令的 Warp 数量。当前值为 <strong>0.29 warp</strong>，说明调度器大部分时间处于空闲状态，利用率较低。</td>
+<td><strong>0.29</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h4>分析与优化</h4>
+<p><strong>调度器活跃 Warp 数量： Active Warps Per Scheduler</strong> 接近理论最大值（7.99 / 8 warp），表明任务在调度器上分配了足够多的 Warp，调度器的硬件资源已接近饱和。</p>
+<p><strong>Eligible Warp 数量较少 ： Eligible Warps Per Scheduler</strong> 仅为 <strong>0.74 warp</strong>，说明大部分 Warp 处于停顿状态，可能因为以下原因：<br>
+1. <strong>内存延迟</strong>：Warp 等待内存访问完成。<br>
+2. <strong>数据依赖</strong>：Warp 等待前一指令的计算结果。<br>
+3. <strong>资源争用</strong>：Warp 等待寄存器或其他硬件资源的可用性。</p>
+<p><strong>Issued Warp 数量低</strong> ： 每个调度器平均每周期只有 <strong>0.29 warp</strong> 实际发出了指令，说明大部分调度器的发射槽（Issue Slot）处于空闲状态，未能充分利用 GPU 的并行计算能力。</p>
+<p><strong>No Eligible 占比高</strong> ： 调度器中 <strong>70.56% 的周期没有可发出指令的 Warp</strong>，进一步表明 Warp 停顿严重。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>优化方向</strong></th>
+<th><strong>优化措施</strong></th>
+<th><strong>目标</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>减少 Warp 停顿</strong></td>
+<td>- <strong>优化内存访问模式</strong>：确保内存访问是合并的（Coalesced Memory Access），减少内存访问延迟。</td>
+<td>减少内存延迟对 Warp 的影响，提高 Eligible Warp 数量。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>使用共享内存</strong>：将常用数据放入共享内存，减少对全局内存的依赖。</td>
+<td>缩短内存访问时间，减少 Warp 等待周期。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>减少数据依赖</strong>：优化线程间数据通信，分解依赖链较长的指令序列。</td>
+<td>提高 Warp 发出指令的可能性，降低调度器空闲时间。</td>
+</tr>
+<tr>
+<td><strong>增加 Eligible Warp 数量</strong></td>
+<td>- <strong>增加线程块尺寸（thread block size）</strong>：合理分配更多线程至每个调度器。</td>
+<td>提高调度器中活跃 Warp 的数量，避免硬件资源浪费。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>减少分支发散（Branch Divergence）</strong>：通过统一控制流减少 Warp 内线程分支行为。</td>
+<td>提高 Warp 执行效率，使更多 Warp 处于 Eligible 状态。</td>
+</tr>
+<tr>
+<td><strong>提高调度器利用率</strong></td>
+<td>- <strong>优化调度器分配</strong>：均匀分配线程块到所有调度器，避免某些调度器过载或空闲。</td>
+<td>确保硬件资源充分利用，提高整体并行计算效率。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>分析资源使用冲突</strong>：优化寄存器使用，避免 Warp 因寄存器不足而停顿。</td>
+<td>降低资源争用导致的 Warp 停顿，增加指令发出机会。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>避免硬件资源瓶颈</strong>：减少对稀缺硬件资源（如 Tensor Core）的过度依赖，平衡资源分配。</td>
+<td>提高硬件利用率，减少 Warp 等待时间。</td>
+</tr>
+<tr>
+<td><strong>优化代码逻辑</strong></td>
+<td>- <strong>重构核函数（Kernel Function）</strong>：减少长时间执行的指令块，分解复杂逻辑。</td>
+<td>提高 Warp 执行效率，缩短执行时间。</td>
+</tr>
+<tr>
+<td></td>
+<td>- <strong>减少循环深度</strong>：通过展开循环或优化循环结构，避免过多线程停顿。</td>
+<td>降低线程同步和数据依赖，增加 Warp 发出指令的频率。</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>Warp State Statistics</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/69b3d9cc8388169787f38ac5294a0f808ca0b0f486b087f1a7de16179f160d5d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130333034303231362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/69b3d9cc8388169787f38ac5294a0f808ca0b0f486b087f1a7de16179f160d5d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393130333034303231362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219103040216.png?imageSlim" style="max-width: 100%;"></a><br>
+Warp State Statistics（线程束状态统计） 的分析结果，用于了解 GPU 任务执行中 Warp（线程束）的执行和停顿状态。Warp 停顿（Stall）是 GPU 性能的主要瓶颈之一，这个图揭示了 Warp 在每周期中的状态分布以及主要的停顿原因。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>说明</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Warp Cycles Per Issued Instruction [cycle]</strong></td>
+<td>每发出一条指令的 Warp 平均停顿周期数，表示 Warp 等待下次发射指令的平均时间。较大的值表明存在较大的性能瓶颈。</td>
+<td><strong>27.15</strong></td>
+</tr>
+<tr>
+<td><strong>Warp Cycles Per Executed Instruction [cycle]</strong></td>
+<td>每执行一条指令的 Warp 平均周期数，通常与上一指标相同。这表明指令之间的延迟和 Warp 停顿对性能的影响。</td>
+<td><strong>27.15</strong></td>
+</tr>
+<tr>
+<td><strong>Avg. Active Threads Per Warp</strong></td>
+<td>每个 Warp 的平均活跃线程数，表示 Warp 中正在参与指令执行的线程数量。</td>
+<td><strong>32</strong></td>
+</tr>
+<tr>
+<td><strong>Avg. Not Predicated Off Threads Per Warp</strong></td>
+<td>平均未被谓词关闭的线程数量，表示每个 Warp 中真正参与计算的线程数量。这表明线程发散对 Warp 的影响。</td>
+<td><strong>31.98</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>柱状图显示了 Warp 状态在所有周期中的分布，包括主要停顿原因和其他状态：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>状态</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stall Long Scoreboard</strong></td>
+<td>Warp 因 L1TEX 数据依赖而停顿的时间占比，表示 L1 缓存或寄存器访问延迟对性能的影响。</td>
+<td><strong>43.6%</strong></td>
+</tr>
+<tr>
+<td><strong>Stall LG Throttle</strong></td>
+<td>Warp 因本地或全局内存操作队列未满而停顿的时间占比，表示全局内存延迟对性能的影响。</td>
+<td><strong>36.3%</strong></td>
+</tr>
+<tr>
+<td><strong>Stall Wait</strong></td>
+<td>Warp 因等待硬件资源（如寄存器或其他计算单元）可用而停顿的时间占比。</td>
+<td><strong>较少</strong></td>
+</tr>
+<tr>
+<td><strong>Stall Not Selected</strong></td>
+<td>Warp 没有被调度器选择的时间占比，表示调度器未充分利用 Warp 的时间。</td>
+<td><strong>很少</strong></td>
+</tr>
+<tr>
+<td><strong>Selected</strong></td>
+<td>Warp 被调度器选中执行指令的时间占比，表示 Warp 实际执行指令的时间。</td>
+<td><strong>最低</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h4>分析与优化</h4>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>停顿原因</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前表现</strong></th>
+<th><strong>占比</strong></th>
+<th><strong>优化建议</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Stall Long Scoreboard</strong></td>
+<td>Warp 因为 <strong>L1TEX 数据依赖</strong>（如本地内存、全局内存、纹理或寄存器操作）而停顿。Warp 等待之前的指令完成或数据准备好才能执行下一条指令。</td>
+<td>平均每 Warp 等待 <strong>11.8 个周期</strong></td>
+<td><strong>43.6%</strong></td>
+<td>- <strong>优化 L1 缓存命中率</strong>：通过合并内存访问和优化数据局部性。  <br>- <strong>使用共享内存</strong>：减少全局内存依赖，提升访问效率。</td>
+</tr>
+<tr>
+<td><strong>Stall LG Throttle</strong></td>
+<td>Warp 因 <strong>本地内存或全局内存队列未满</strong> 而停顿。这通常发生在内存操作非常频繁时，内存访问指令等待队列资源。</td>
+<td>平均每 Warp 等待 <strong>9.9 个周期</strong></td>
+<td><strong>36.3%</strong></td>
+<td>- <strong>合并内存操作</strong>：将多个小范围内存访问合并为更宽的内存操作。  <br>- <strong>指令交错</strong>：在内存访问之间插入计算指令以隐藏延迟。</td>
+</tr>
+<tr>
+<td><strong>Stall Wait</strong></td>
+<td>Warp 因等待 <strong>硬件资源（如寄存器或计算单元）</strong> 可用而停顿。</td>
+<td>时间较少</td>
+<td><strong>较少</strong></td>
+<td>- <strong>优化寄存器分配</strong>：减少 Warp 的寄存器需求。</td>
+</tr>
+<tr>
+<td><strong>Stall Not Selected</strong></td>
+<td>Warp 没有被调度器选中执行指令的时间，表明调度器资源未被充分利用。</td>
+<td>时间较少</td>
+<td><strong>很少</strong></td>
+<td>- <strong>增加调度器活跃 Warp 数量</strong>：增加线程块或分配更多 Warp 至调度器。</td>
+</tr>
+<tr>
+<td><strong>Selected</strong></td>
+<td>Warp 被调度器选中执行指令的时间，表示 Warp 实际执行的时间。</td>
+<td>时间较少</td>
+<td><strong>最低</strong></td>
+<td>- <strong>减少停顿时间</strong>：通过优化内存访问模式和减少分支发散，提高 Warp 被选中的频率。</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>Instruction Statistics</h3>
+<p><strong>Instruction Statistics（指令统计）</strong>，主要用来分析 GPU 内核中已执行和已发射的低级汇编指令（SASS）。这些统计信息提供了关于指令类型和频率的见解，帮助了解指令发射和执行的效率以及潜在的性能瓶颈。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f3a7c93366dc603c7659f9ff3231dab1751953408cfc218141a03577b23fef59/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131313233353532352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f3a7c93366dc603c7659f9ff3231dab1751953408cfc218141a03577b23fef59/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131313233353532352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219111235525.png?imageSlim" style="max-width: 100%;"></a></p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Executed Instructions [inst]</strong></td>
+<td>已执行指令数，表示 GPU 在运行内核时执行的总指令数。这反映了内核的计算密集度和执行负载。</td>
+<td><strong>809,631,744</strong></td>
+</tr>
+<tr>
+<td><strong>Issued Instructions [inst]</strong></td>
+<td>已发射指令数，表示 GPU 调度器向计算单元（SM）分配的总指令数。发射的指令可能因资源限制或停顿而未能立即执行。</td>
+<td><strong>809,635,617</strong></td>
+</tr>
+<tr>
+<td><strong>Avg. Executed Instructions Per Scheduler [inst]</strong></td>
+<td>每个调度器平均执行的指令数，表示 GPU 调度器之间的工作分配是否均衡。</td>
+<td><strong>8,433,664</strong></td>
+</tr>
+<tr>
+<td><strong>Avg. Issued Instructions Per Scheduler [inst]</strong></td>
+<td>每个调度器平均发射的指令数，反映调度器的指令发射活动是否高效。</td>
+<td><strong>8,433,704.34</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<h3>Occupancy</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/98a6fe593f4f3977fce6b305368a4c095b7ac5fa7005976032cd6dc78e1fad79/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131313432373438352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/98a6fe593f4f3977fce6b305368a4c095b7ac5fa7005976032cd6dc78e1fad79/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131313432373438352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219111427485.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>Occupancy（占用率） 的相关指标，用于分析 GPU 核函数（Kernel）在 Streaming Multiprocessor（SM）上的 Warp 分配和利用情况。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th><strong>指标</strong></th>
+<th><strong>含义</strong></th>
+<th><strong>当前值</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Theoretical Occupancy [%]</strong></td>
+<td>理论占用率，是指最大可能活跃 Warp 数占 SM 支持的最大 Warp 数的比例。100% 表示所有可能的 Warp 资源都被分配并利用。</td>
+<td><strong>100</strong></td>
+</tr>
+<tr>
+<td><strong>Theoretical Active Warps Per SM [warp]</strong></td>
+<td>每个 SM 上理论最大活跃 Warp 数量，反映硬件支持的最大并行度。</td>
+<td><strong>32</strong></td>
+</tr>
+<tr>
+<td><strong>Achieved Occupancy [%]</strong></td>
+<td>实际占用率，表示内核执行时实际活跃 Warp 数占理论最大活跃 Warp 数的比例。</td>
+<td><strong>99.92</strong></td>
+</tr>
+<tr>
+<td><strong>Achieved Active Warps Per SM [warp]</strong></td>
+<td>每个 SM 上实际活跃的 Warp 数量，反映任务运行时的实际并行度。</td>
+<td><strong>31.98</strong></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/ba81a34a1085f28a65d6c571357f188a00acb626ef281f7bef7e526ca2c95c2a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323430313036322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/ba81a34a1085f28a65d6c571357f188a00acb626ef281f7bef7e526ca2c95c2a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323430313036322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219112401062.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>块大小对性能的影响，每块共享内存用量对性能的影响</p>
+<h3>Source Counters</h3>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/03af8555e3628e81b53111c9323a4d2c02799eacf5f9dc3afe54efc110aa997f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323534323530312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/03af8555e3628e81b53111c9323a4d2c02799eacf5f9dc3afe54efc110aa997f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303234313231393131323534323530312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20241219112542501.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>在这个电脑上只有SASS的代码，具体可以看这个BLOG <a href="https://zhuanlan.zhihu.com/p/709873278" rel="nofollow">CUDA MODE</a></p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>
