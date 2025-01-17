@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim)
+参考：[873_ic29-2014.pdf](https://www.yuque.com/attachments/yuque/0/2025/pdf/2636058/1736234338923-b5f416dc-9488-45dd-b362-4c3de6127c4d.pdf)
+# 1. Kinematic Chain
+
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140658779.png?imageSlim)
+
+> A robotic manipulator may be considered as set of links connected in a chain called **kinematic chain** by joints (figure 1).
+
+维基百科中关于 Kinematic Chain 的概念：
+
+> In [mechanical engineering](https://en.wikipedia.org/wiki/Mechanical_engineering), a kinematic chain is an assembly of [rigid bodies](https://en.wikipedia.org/wiki/Rigid_body) connected by [joints](https://en.wikipedia.org/wiki/Joint_(mechanics)) to provide constrained motion that is the [mathematical model](https://en.wikipedia.org/wiki/Mathematical_model) for a [mechanical system](https://en.wikipedia.org/wiki/Mechanical_system)
+
+简单理解就是由刚体和 joint 组成的一个系统，可以做一些受约束的运动，比如人的手臂是或者机械臂，都可以抽象成一个 Kinematic Chain.
+
+重点理解 joint 和 link 的概念：joint 是关节，常见的有移动副（prismatic joint）和转动副（revolute joint）如图二。">
+<meta property="og:title" content="DH参数详解">
+<meta property="og:description" content="![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim)
+参考：[873_ic29-2014.pdf](https://www.yuque.com/attachments/yuque/0/2025/pdf/2636058/1736234338923-b5f416dc-9488-45dd-b362-4c3de6127c4d.pdf)
+# 1. Kinematic Chain
+
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140658779.png?imageSlim)
+
+> A robotic manipulator may be considered as set of links connected in a chain called **kinematic chain** by joints (figure 1).
+
+维基百科中关于 Kinematic Chain 的概念：
+
+> In [mechanical engineering](https://en.wikipedia.org/wiki/Mechanical_engineering), a kinematic chain is an assembly of [rigid bodies](https://en.wikipedia.org/wiki/Rigid_body) connected by [joints](https://en.wikipedia.org/wiki/Joint_(mechanics)) to provide constrained motion that is the [mathematical model](https://en.wikipedia.org/wiki/Mathematical_model) for a [mechanical system](https://en.wikipedia.org/wiki/Mechanical_system)
+
+简单理解就是由刚体和 joint 组成的一个系统，可以做一些受约束的运动，比如人的手臂是或者机械臂，都可以抽象成一个 Kinematic Chain.
+
+重点理解 joint 和 link 的概念：joint 是关节，常见的有移动副（prismatic joint）和转动副（revolute joint）如图二。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/DH-can-shu-xiang-jie.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>DH参数详解</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+<style>#postBody{font-size:20px}</style><style>.markdown-alert{padding:0.5rem 1rem;margin-bottom:1rem;border-left:.25em solid var(--borderColor-default,var(--color-border-default));}.markdown-alert .markdown-alert-title {display:flex;font-weight:var(--base-text-weight-medium,500);align-items:center;line-height:1;}.markdown-alert>:first-child {margin-top:0;}.markdown-alert>:last-child {margin-bottom:0;}</style><style>.markdown-alert.markdown-alert-tip {border-left-color:var(--borderColor-success-emphasis, var(--color-success-emphasis));background-color:var(--color-success-subtle);}.markdown-alert.markdown-alert-tip .markdown-alert-title {color: var(--fgColor-success,var(--color-success-fg));}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">DH参数详解</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/5" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/2e90765e79210a6ce2d3d2d97c098962a8a0a6a7707d08b58f753d938a28ee7d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131343134303732393039362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/2e90765e79210a6ce2d3d2d97c098962a8a0a6a7707d08b58f753d938a28ee7d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131343134303732393039362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim" style="max-width: 100%;"></a><br>
+参考：<a href="https://www.yuque.com/attachments/yuque/0/2025/pdf/2636058/1736234338923-b5f416dc-9488-45dd-b362-4c3de6127c4d.pdf" rel="nofollow">873_ic29-2014.pdf</a></p>
+<h1>1. Kinematic Chain</h1>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f3efbd1ef23922fcccc965c5f2ac5f6bf8055a7546b92af70123171e5ade223a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131343134303635383737392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f3efbd1ef23922fcccc965c5f2ac5f6bf8055a7546b92af70123171e5ade223a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131343134303635383737392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140658779.png?imageSlim" style="max-width: 100%;"></a></p>
+<blockquote>
+<p>A robotic manipulator may be considered as set of links connected in a chain called <strong>kinematic chain</strong> by joints (figure 1).</p>
+</blockquote>
+<p>维基百科中关于 Kinematic Chain 的概念：</p>
+<blockquote>
+<p>In <a href="https://en.wikipedia.org/wiki/Mechanical_engineering" rel="nofollow">mechanical engineering</a>, a kinematic chain is an assembly of <a href="https://en.wikipedia.org/wiki/Rigid_body" rel="nofollow">rigid bodies</a> connected by <a href="https://en.wikipedia.org/wiki/Joint_(mechanics)" rel="nofollow">joints</a> to provide constrained motion that is the <a href="https://en.wikipedia.org/wiki/Mathematical_model" rel="nofollow">mathematical model</a> for a <a href="https://en.wikipedia.org/wiki/Mechanical_system" rel="nofollow">mechanical system</a></p>
+</blockquote>
+<p>简单理解就是由刚体和 joint 组成的一个系统，可以做一些受约束的运动，比如人的手臂是或者机械臂，都可以抽象成一个 Kinematic Chain.</p>
+<p>重点理解 joint 和 link 的概念：joint 是关节，常见的有移动副（prismatic joint）和转动副（revolute joint）如图二。<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/df1cdaea1b17493f35d8e16679548e633a2bb403c0c6df9c493ea705dc417ccb/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363134353332363237312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/df1cdaea1b17493f35d8e16679548e633a2bb403c0c6df9c493ea705dc417ccb/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363134353332363237312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250116145326271.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>每个 joint 都有<strong>2 个</strong>link 和它连接，这里只举了这两个例子。对于复杂的多自由度关节（例如球窝关节有 2 个自由度，球形腕部有 3 个自由度），可以将它们看作由<strong>长度为零的虚拟连杆</strong>和多个单自由度关节组合而成。例如一个球窝关节可以拆解为两个单自由度的旋转关节，用一个零长度连杆隔开。</p>
+<p>这种假设不会导致一般性的丢失（real loss of generality），因为所有复杂的关节都可以被分解成这种形式。</p>
+<p>URDF 种常见的 joint 如下：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/105591f108ceb45443cc7a5afeba22467a10e928e70412c72bec134f5a1f6ebe/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363134353633353830332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/105591f108ceb45443cc7a5afeba22467a10e928e70412c72bec134f5a1f6ebe/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363134353633353830332e706e673f696d616765536c696d" alt="image.png|975" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250116145635803.png?imageSlim" style="max-width: 100%;"></a></p>
+<ul>
+<li>
+<p><span>编号规则</span><br>
+对于一个具有 $n$ 个关节的机械臂，连杆的数量是 $n + 1$ ，连杆的编号从 $0\sim n$ , 其中<br>
+<strong>Link 0</strong>：固定基座（base of the manipulator）<br>
+<strong>Link n</strong>：末端执行器（end-effector），例如机械臂的抓取器或工具<br>
+<strong>Joint i</strong>：连接 $link_{i-1}$ 和 $link_{i}$</p>
+</li>
+<li>
+<p><span>运动规则:</span><br>
+当<strong>joint i</strong> 被驱动（actuated）时，<strong>Link i</strong> 会运动</p>
+</li>
+<li>
+<p><span>连杆参数:</span><br>
+每个连杆可以用两个参数来定义其在空间中的位置关系：这些参数是静态的，也就是不会随着关节的运动而变化，在下一章会详细讲解<br>
+<strong>Link Length</strong>（连杆长度）： 连杆之间的距离，通常沿着某个轴定义。<br>
+<strong>Link Twist</strong>（连杆扭转角）： 两个轴之间的扭转关系，定义它们在空间中的相对位置。</p>
+</li>
+<li>
+<p><span>关节参数:</span><br>
+关节可以通过以下两个参数来描述，这些参数是动态的，通常由机器人控制器实时调整，以实现特定的运动。<br>
+<strong>Offset Length（偏移长度）</strong>：沿关节轴线从一个连杆到下一个连杆的距离。<br>
+<strong>Joint Angle（关节角度）</strong> ： 一个连杆相对于下一个连杆的旋转角度，围绕关节轴线。</p>
+</li>
+<li>
+<p><span>坐标系的设计：</span></p>
+</li>
+</ul>
+<blockquote>
+<p>A coordinate frame is attached rigidly to each link.</p>
+</blockquote>
+<p>每个连杆（link）都固定一个坐标系（coordinate frame），为了描述连杆在空间中的位置和方向。这些坐标系在机械臂运动中是固定在连杆上的，随连杆一起移动。</p>
+<blockquote>
+<p>To facilitate describing the location of each link we affix a coordinate frame to it: frame i is attached to link i.</p>
+</blockquote>
+<p>为方便描述连杆的位置，<strong>每个连杆都附加一个编号的坐标系</strong>。坐标系 $i$ 用于描述 Link i 的位置和方向。坐标系编号与连杆编号相对应，便于管理和数学建模。</p>
+<p>连杆运动中，坐标系不变。</p>
+<blockquote>
+<p>When the robotic manipulator executes a motion, the coordinates of each point on the link are constant.</p>
+</blockquote>
+<p>当机械臂运动时，每个连杆上的点（如某些物理特征点）的坐标在其附加的坐标系中是固定的。即：坐标系是刚性地附着在连杆上的，不会因为机械臂的运动而变化。</p>
+<ul>
+<li><span>关节的轴线与坐标系的 z-轴对齐:</span></li>
+</ul>
+<blockquote>
+<p>Each joint has a joint axis with respect to which the motion of joint is described. By convention, the <strong>z-axis</strong> of a coordinate frame is aligned with the joint axis.</p>
+</blockquote>
+<p><strong>关节轴线（Joint Axis）</strong>：关节的运动是围绕或沿着某个轴线进行的，这个轴线称为关节轴线。</p>
+<p>如果是旋转关节（revolute joint），运动是围绕该轴线的旋转。</p>
+<p>如果是平移关节（prismatic joint），运动是沿着该轴线的平移。</p>
+<p>惯例：机械臂的运动学建模中，通常将关节轴线对齐到坐标系的 𝑧-轴。这样可以简化运动学方程的建立。</p>
+<ul>
+<li>
+<p><span>末端执行器的自由度</span><br>
+机械臂的末端执行器（end-effector，例如机械手抓取器或焊接头）在空间中的位置和方向由 6 个自由度描述：3 个平移自由度：在 xyz 方向上的位移。3 个旋转自由度：围绕 xyz 轴的旋转角度（即欧拉角或四元数描述）。</p>
+</li>
+<li>
+<p> <span>正向运动学（Forward Kinematics，FK）</span></p>
+</li>
+</ul>
+<blockquote>
+<p>The objective of forward kinematic analysis is to determine the cumulative effect of the entire set of joint variables.</p>
+</blockquote>
+<p>FK 的目标是通过已知的关节变量（关节角度或平移距离）计算机械臂末端执行器的位置和方向。</p>
+<ul>
+<li><span>关节变量</span></li>
+</ul>
+<blockquote>
+<p>The displacement of joint is denoted by $q_{i}$ and is called joint variable.</p>
+</blockquote>
+<p>关节变量（Joint Variable）, 每个关节变量用一个 $q_{i}$ 表示，如果是旋转关节则表示关节旋转的角度；如果是移动关节，表示移动的距离。</p>
+<p>所有关节变量的集合组成关节向量（Joint Vector），n 是关节数量，关节向量是正向运动学的输入。</p>
+<blockquote>
+<p>The collection of joint variables <a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/efe726b9af9172a5fcd5f6d562b700579855c898d7b748344a3db1bb16368794/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f32373737366437646162313538633032373064303539363438343063376436652e737667"><img src="https://camo.githubusercontent.com/efe726b9af9172a5fcd5f6d562b700579855c898d7b748344a3db1bb16368794/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f32373737366437646162313538633032373064303539363438343063376436652e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/27776d7dab158c0270d05964840c7d6e.svg" style="max-width: 100%;"></a>is called the joint vector.</p>
+</blockquote>
+<ul>
+<li><span>末端执行器位置向量 r</span></li>
+</ul>
+<blockquote>
+<p>The position of the end-effector is denoted by the dimensional vector <a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/cd34de98de19a8a231fd62684778caa26be99870d047c6e50f2cd67f7b212bff/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64323434343137643931666434633131663564343765336564353338313038632e737667"><img src="https://camo.githubusercontent.com/cd34de98de19a8a231fd62684778caa26be99870d047c6e50f2cd67f7b212bff/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64323434343137643931666434633131663564343765336564353338313038632e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/d244417d91fd4c11f5d47e3ed538108c.svg" style="max-width: 100%;"></a></p>
+</blockquote>
+<p>R 是一个位置向量（dimensional vector），他的维度 m 和末端执行器有关。如果末端执行器只考虑空间种的位置 xyz，r 就是三维向量；如果同时包含方向信息，r 就是六维向量。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/33f3d3171d2091982e397682a247a4009e8addf916ddecd64e4172f00d5cd2b7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363138303030363236312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/33f3d3171d2091982e397682a247a4009e8addf916ddecd64e4172f00d5cd2b7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131363138303030363236312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250116180006261.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>正向运动学就是找到一个函数 f，它描述了关节变量 q 和末端执行器位置 r 之间的关系。</p>
+<h1>2. Link and Joint Parameters</h1>
+<p>Link 连杆是机械臂中位于关节之间的刚性部分，每个连杆有两个端点：</p>
+<p><strong>Proximal end（近端）</strong>：靠近机械臂基座的一端。</p>
+<p><strong>Distal end（远端）</strong>：靠近机械臂末端（工具、末端执行器）的另一端。</p>
+<p>每个连杆由编号较小的关节连接到编号较大的关节。</p>
+<p>Link Parameters（连杆参数）：</p>
+<p>每个连杆可以通过 <strong>4 个</strong>参数完整描述其几何和运动学特性，这种描述主要基于 <strong>Denavit-Hartenberg (D-H) 参数化方法</strong>。其中 2 个平移方向（translation）用于描述连杆之间的线性关系， 2 个旋转轴（rotation）描述连杆之间的旋转关系。</p>
+<p>上一节已经说到在定义连杆 Link 时，有 2 个参数来定义其在空间中的位置关系分别是<strong>Link Length</strong>（连杆长度）和<strong>Link Twist</strong>（连杆扭转角），这两个参数是<strong>静态</strong>的，它们是机械臂的几何参数，描述的是连杆和关节轴之间的固定空间关系，这两个参数在关节运动过程中始终保持不变。</p>
+<p>下面是这两个参数的详细定义：<br>
+<strong>Link Length（连杆长度， $a_{i}$ ）</strong>: 沿两个关节轴线的公法线（common normal，垂直于两个轴）测量的距离。简单来说， $a_i$ 表示关节 i 和关节 i+1 之间的水平距离（沿 x-轴方向）。这个参数用来描述相邻关节之间的水平分离。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/48c461f1745dd2ab28c9d7963e566a63b1ea057a44e88cc048a7732a69ba79f3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303332353938332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/48c461f1745dd2ab28c9d7963e566a63b1ea057a44e88cc048a7732a69ba79f3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303332353938332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117090325983.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><strong>Twist Angle (扭转角， $\alpha_i$ )</strong>：关节和关节轴线之间的夹角。这个角度是在两条关节轴线的正交投影到公法线平面上测量的。简单来说，它表示两个相邻关节之间的“旋转偏差”。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/479fa05579ab9665903753ee4cfed10b299682c10ff504d793e9243b5072df2e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303435333434372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/479fa05579ab9665903753ee4cfed10b299682c10ff504d793e9243b5072df2e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303435333434372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117090453447.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>同时，结合两个动态的关节参数 Link <strong>Offset Length（偏移长度）和 Joint Angle（关节角度）：</strong><br>
+连杆偏移量（Link Offset, $d_i$ ) : 表示当前关节轴，连杆与关节之间沿关节 $z_i$ 轴线的平移距离<br>
+关节角（Joint Angle, $\theta_i$ ) : 绕关节 $z_{i}$ 轴的旋转角度。对于旋转关节，关节角是其运动的变量，控制关节的旋转状态。</p>
+<p>在一个机械臂中，关节可以是旋转关节或平移关节 (复杂的关节也可以转换成最简单的旋转和平移关节的组合)，<strong>对于旋转关节， $\theta_i$ 是变量，用于描述旋转运动， $d_{i}$ 是固定的，用于描述关节的位置偏移。</strong><br>
+<strong>对于平移关节， $d_{i}$ 是变量，用于描述平移运动， $\theta_i$ 是固定的，用于描述关节的旋转偏移。</strong></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/738a7d55943a1ac4d1141f5248214b9d307d4ef055d0f0d0aa3a5c04942996f5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303834353636322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/738a7d55943a1ac4d1141f5248214b9d307d4ef055d0f0d0aa3a5c04942996f5/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303834353636322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117090845662.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>如上图所示，再来理解一下四个参数的具体计算：<br>
+这里需要理解 $Link_{i}$ , $Joint_{i}$ 和 $O_{xyz}$ 的下标对应关系。<br>
+对于 $Link_{i}$  连接两个关节， $Joint_{i}$ 和 $Joint_{(i+1)}$<br>
+对于 $Joint_{i}$ ，连接两个 Link，分别是 $Link_{(i-1)}$ 和 $Link_{i}$<br>
+记不住的话可以再看下图：<br>
+<a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/525020f417d0fc8c6d4254dcdcb8522266365335af656e0e62c0835933d84965/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303931313534312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/525020f417d0fc8c6d4254dcdcb8522266365335af656e0e62c0835933d84965/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373039303931313534312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117090911541.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>Joint 1 连接 Link 0（Base）和 Link 1，Link 1 连接 Joint 1 和 Joint 2<br>
+上一节说到过，坐标系是描述 Link 的运动，对于 $Link_{i}$ ，坐标系 $O_{i}$ 建在 $Joint_{(i+1)}$ 这一侧。所以轴 $z_{i}$ 是 $Joint_{(i+1)}$ 的转动轴或者移动轴。<br>
+对于 $Link_{i}$ ：<br>
+<strong>连杆长度</strong> $a_{i}$  是轴 $z_{i-1}$ 到 $z_{i}$ 沿 $x_{i}$ 方向的距离。<br>
+<strong>扭转角</strong> $\alpha_i$  是轴 $z_{i-1}$ 和 $z_{i}$ 之间的夹角。这个角度是在 $x_{i}$ 轴上按照右手定则测量的。<br>
+<strong>连杆偏移量</strong>  $d_{i}$ 是 $Link_{i-1}$ 和 $Link_{i}$ 坐标系沿轴 $z_{i-1}$ 方向的平移距离<br>
+<strong>关节角</strong> $\theta_i$  $Link_{i-1}$ 和 $Link_{i}$ 坐标系沿轴 $z_{i-1}$ 方向的转动角度</p>
+<h1>3. Link Frames</h1>
+<p>定义一个坐标系，我们需要知道 4 个因素：原点 $O$ 的位置，xyz 轴的方向。<br>
+每个连杆 $i$ 的坐标系 $O_i ,x_i,y_i,z_i$ 被定义如下：</p>
+<ol>
+<li>
+$z_i$ 轴：表示关节 $i+1$ 的运动方向，如果是旋转关节 $z_i$ 表示旋转轴；如果是平移关节， $z_i$ 表示平移轴。</li>
+<li>
+$x_i$ 轴： $z_{i-1}$ 轴到 $z_i$ 轴公法线方向，描述了连杆之间的水平分离。</li>
+<li>
+$y_i$ 轴：通过 $z_i$ 轴和 $x_i$ 轴叉乘获得 $y_i = z_i \times x_i$
+</li>
+<li>原点 $O_i$ :  $z_{i-1}$ 轴到 $z_i$ 轴公法线和 $z_i$ 轴的交点。</li>
+</ol>
+<p>那么 $O_0,x_0,y_0,z_0$ 如何定义？</p>
+<p>对于 Link 0 的坐标系，通常称之为 Base 坐标系。通常将 Base 坐标系原点与机械臂的第一个连杆（Link 0）的原点对齐，这样可以简化坐标变换。并且 Z 轴垂直向上，满足右手定则即可。<br>
+通常情况下，显示 z-轴和 x-轴就足够了，因为这两个轴有意义（运动放心，水平分离），y 轴通过叉乘获得，不需要单独画出来。<br>
+通过上述流程，可以定义一个从 $Link_{1}$ 到 $Link_{n-1}$ 的坐标系。（ $Link_{0}$ 坐标系是 Base 坐标系，通常提前定义好了，  $Link_{n}$ 是末端执行器）。</p>
+<h1>4. DENAVIT - HARTENBERG (D-H) CONVENTION</h1>
+<p>在机器人应用中，选择参考坐标系的常用约定是 Denavit-Hartenberg (D-H) 约定。在这种约定中，末端执行器的位置和方向由以下公式表示：</p>
+<p>$$
+H = ^0T_{n} = ^0T_{1}^1T_{2}^2T_{3}...^{n-1}T_{n}
+$$</p>
+<p>其中：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/845f5b799b66589443314d951ec3f57d680457331ccd50c5b323da8ffc9afef9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131313435393439352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/845f5b799b66589443314d951ec3f57d680457331ccd50c5b323da8ffc9afef9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131313435393439352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117111459495.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>DH 有两种形式：</p>
+<ul>
+<li><strong>经典形式（Classical/Standard DH）</strong>： 按照 Denavit 和 Hartenberg 的原始论文提出的约定。</li>
+<li><strong>修改形式（Modified DH）：</strong> 由 John J. Craig 在其教科书中引入。</li>
+</ul>
+<p>两种形式都将 joint 表示为 2 个平移 ( $a,d$ ) 和两个角度 ( $\alpha, \theta$ )。<br>
+但是 Link 的变换矩阵不同。</p>
+<blockquote>
+<p>However the expressions for the link transform matrices are quite  different.</p>
+</blockquote>
+<p>简而言之，你需要知道自己使用的是哪种 DH 方法。</p>
+<div class="markdown-alert markdown-alert-tip"><p class="markdown-alert-title"><svg class="octicon octicon-light-bulb mr-2" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>Tip</p><p>最简单的一种区分方式是看变量的下标，对于 $Link_{i}$ 4 个参数如果下标都是 $i$ ，则是标准 DH；如果有 $i-1$ 则是 Modified DH</p>
+</div>
+<h2>4.1 Classical Convention</h2>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/7fdf4ad8c76fc8061dbfd423362c0a207b54549b873b324c3338a121605721fd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131323934343435352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/7fdf4ad8c76fc8061dbfd423362c0a207b54549b873b324c3338a121605721fd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131323934343435352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117112944455.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>如上图所示，对于 $Link_{i}$ 的 4 个 DH 参数：（和上一节中定义是相同的）</p>
+<p>连杆长度： $a_{i}$ 是轴 $z_{i-1}$ 到 $z_{i}$ 沿 $x_{i}$ 方向的距离。<br>
+扭转角： $\alpha_i$ 是轴 $z_{i-1}$ 和 $z_{i}$ 之间的夹角。这个角度是在 $x_{i}$ 轴上按照右手定则测量的。<br>
+连杆偏移量 $d_{i}$ 是 $Link_{i-1}$ 和 $Link_{i}$ 坐标系沿轴 $z_{i-1}$ 方向的平移距离<br>
+关节角 $\theta_i$ $Link_{i-1}$ 和 $Link_{i}$ 坐标系沿轴 $z_{i-1}$ 方向的转动角度<br>
+通常将所有 Link 的 DH 参数写在一个表中：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/c46a5b4d238bc5994e85ae7786064235be10321f52c7ecb2dcdbee385ce66a0b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131333732353037322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/c46a5b4d238bc5994e85ae7786064235be10321f52c7ecb2dcdbee385ce66a0b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373131333732353037322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117113725072.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>接下来就是通过 DH 参数，构建变换矩阵 T。<br>
+齐次变换矩阵 $^{i-1}T_{i}$ 是一个 4×4 的齐次变换矩阵，描述了从连杆 $i-1$ 的坐标系到连杆 $i$ 的坐标系的变换关系。<br>
+从 $i-1$ 到 $i$ 的坐标系的齐次变换可以分解为 4 个基本步骤（即 4 个基本变换）：</p>
+<ol>
+<li>绕 $z_{i-1}$ 轴旋转 $\theta_{i}$
+</li>
+<li>沿 $z_{i-1}$ 轴平移 $d_{i}$
+</li>
+<li>沿 $x_i$ 轴平移 $a_i$
+</li>
+<li>绕 $x_i$ 轴旋转 $\alpha_i$<br>
+齐次变换矩阵 $^{i-1}T_i$ 的公式表示为:<br>
+$^{i−1}T_i=R(z_{i−1},θ_i)⋅T(z_{i−1},d_i)⋅T(x_i,a_i)⋅R(x_i,α_i)$<br>
+将我们的 DH 参数代入：</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/37858a6ee9a65741abf3fada5adc4c2714d16a11e66b9636314db991e5156d3b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323033373034322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/37858a6ee9a65741abf3fada5adc4c2714d16a11e66b9636314db991e5156d3b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323033373034322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132037042.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>下面是经典 DH 方法的算法流程：</p>
+<ol>
+<li>
+<p>识别并对连杆（links）进行编号，从基座（base）开始，一直到末端执行器（end-effector）。连杆从 0 到 n 编号。<br>
+a. 基座坐标系为{0]，末端执行器坐标系为{n}。<br>
+b. 确定并标记各个关节轴线 $z_0,z_1,z_2...z_{n-1}$</p>
+</li>
+<li>
+<p>确定基座坐标系的位置：<br>
+a. 基坐标系的原点是随意的，通常设置在 Link 0 的末端。 $z_0$ 轴通常竖直向上。<br>
+b. $x_0$ 轴垂直于 $z_0$ 轴，并在初始位置（home position）中，当第一个关节角变量 $\theta_1 = 0$ 时，与 $x_1$ 轴平行。<br>
+c. $y_0$ 轴通过叉乘定义： $y_0 = z_0 \times x_0$<br>
+对于 i=1,2,…, n 执行步骤 3 到步骤 5。</p>
+</li>
+<li>
+<p>确定原点 $O_i$ 的位置：<br>
+a.  原点 $O_i$ 是 $z_i$ 轴和 $z_{i-1}$ 轴的公法线（common normal）的交点。<br>
+b. 如果 $z_i$ 轴和 $z_{i-1}$ 轴相交，则将 $O_i$ 定义在该交点上。<br>
+c. 如果 $z_i$ 轴和 $z_{i-1}$ 轴平行，则可以在 $z_i$ 轴上选择任意方便的位置作为 $O_i$ 。</p>
+</li>
+<li>
+<p>沿 $z_i$ 和 $z_{i-1}$ 的公法线方向建立 $x_i$ 轴：<br>
+a. $x_i$ 轴沿公法线方向，并通过原点 $O_i$ 。<br>
+b. $x_i$ 轴与 $z_i$ 和 $z_{i-1}$ 轴均垂直，并从 $z_i$ 轴上指向外部。</p>
+</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/2eb158cebe21369ad79066028ee5dcedc3549b1750897537179c34eb6b1a26c3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323232333139352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/2eb158cebe21369ad79066028ee5dcedc3549b1750897537179c34eb6b1a26c3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323232333139352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132223195.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d36e98717cf795d11f26c147eab7f8786274fdd702f4b5d60f9262ad2782b600/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323232383834392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d36e98717cf795d11f26c147eab7f8786274fdd702f4b5d60f9262ad2782b600/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323232383834392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132228849.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/58edce2fd275efec2f90dd75399ad511991b4857185fcda5aaf42feb6005015f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323233323437342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/58edce2fd275efec2f90dd75399ad511991b4857185fcda5aaf42feb6005015f/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323233323437342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132232474.png?imageSlim" style="max-width: 100%;"></a></p>
+<ol start="5">
+<li>找到 $y_i$ ，满足右手定则，通过叉乘找到。</li>
+<li>为机械臂末端执行器（End-Effector）定义坐标系：<br>
+a. 确定 $z_n$ 轴，假设第 n 个关节是旋转关节， $z_n$ 沿着 $z_{n-1}$ 并且远离末端执行器的方向。 $z_n$ 通常是接近方向（Approach Direction）<br>
+b. 确定原点 $O_n$ ，原点通常位于末端执行器的中心（如夹持器的中心）或任何工具的尖端。<br>
+c. 确定 $y_n$ , 通常表示滑动方向（Sliding Direction），如果末端工具是一个夹持器（Gripper），则 $y_n$ 是夹持器手指滑动的方向，即打开或关闭夹持器的方向。<br>
+d. 确定 $x_n$ , 叉乘获得。</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/62c8f134eb0f06191ad7be13cfd29c915404fce88ac9e3795a3935e49756a986/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323334333432302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/62c8f134eb0f06191ad7be13cfd29c915404fce88ac9e3795a3935e49756a986/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323334333432302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132343420.png?imageSlim" style="max-width: 100%;"></a></p>
+<ol start="7">
+<li>建立 DH 参数和 Link 的表格</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/e89ef72b974c21c16cbccee55314c25f365869d73ba88bed937e2543f39cb42b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323430333937352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/e89ef72b974c21c16cbccee55314c25f365869d73ba88bed937e2543f39cb42b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323430333937352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132403975.png?imageSlim" style="max-width: 100%;"></a></p>
+<ol start="8">
+<li>计算齐次变换矩阵 $^{i-1}T_i$
+</li>
+<li>计算 $^0T_n = ^0T_1 ^1T_2...^{n-1}T_n$ 得到末端执行器坐标系在 Base 坐标系下的表示。<br>
+注意：<br>
+基座坐标系的原点与第一个关节坐标系的原点重合。通过这个假设，基座坐标系和第一个关节的坐标系在初始时刻的位置完全相同，简化了运动学建模。在正向运动学（Forward Kinematics）中，变换从 $T_1$ 开始计算，避免了额外的坐标变换。</li>
+</ol>
+<h2>4.2. Modified Convention</h2>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d4f942706e17692f11528cc205d3318cb9869022e833f49fb4778a0670da5bb7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323532323532392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d4f942706e17692f11528cc205d3318cb9869022e833f49fb4778a0670da5bb7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323532323532392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132522529.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>Modified DH 如上图所示，<br>
+Twist angle， $\alpha_{i-1}$ 表示 $z_{i-1}$ 到 $z_{i}$ 沿着 $x_{i-1}$ 轴的旋转。<br>
+Link length， $a_{i-1}$ 表示 $z_{i-1}$ 到 $z_{i}$ 沿着 $x_{i-1}$ 轴的平移。<br>
+Offset length， $d_{i}$ 表示 $x_{i-1}$ 到 $x_{i}$ 沿着 $z_{i}$ 轴的距离<br>
+Joint angle,  $\theta_i$ 表示 $x_{i-1}$ 到 $x_{i}$ 沿着 $z_{i}$ 轴的旋转<br>
+DH 参数表格如下图所示：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/c73ea0587a1517eead515e1ad0785303819054789c1fcd3d285edc73b4558ee2/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323534323931372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/c73ea0587a1517eead515e1ad0785303819054789c1fcd3d285edc73b4558ee2/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323534323931372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132542917.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>坐标系的转换关系 $^{i-1}T_i$ 描述 Link i-1 到 Link i 的运动，分解成以下几个运动：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/664f1fdd837b58c4dde0ef59dce1fdf539c574dcc64096e0cb1ed23965044b37/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323630323636332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/664f1fdd837b58c4dde0ef59dce1fdf539c574dcc64096e0cb1ed23965044b37/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323630323636332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132602663.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6efa11b8753c8917fbe1f796163ba553df1c576ae406634e96e28e4b9af48a2d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323630383932362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/6efa11b8753c8917fbe1f796163ba553df1c576ae406634e96e28e4b9af48a2d/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323630383932362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132608926.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>Modified DH 算法流程：</p>
+<ol>
+<li>基坐标系的设置：基坐标系被分给 Link 0，基座坐标系可以是任意的，但为了简化，选择 $z_0$ 轴与第一个关节轴 $z_1$ 共线 （当第一个关节变量 $\theta_1 = 0$ 时）。通过这种设置，<br>
+a. $a_0=0$ ，即连杆 0 的长度为零。<br>
+b. $\alpha_0 = 0$ ，即连杆 0 的扭转角为零。<br>
+c. 如果第一个关节是旋转关节，则 $d_1 = 0$ 。<br>
+d. 如果第一个关节是平移关节，则 $\theta_1 = 0$ 。</li>
+<li>确定连杆和关节, 每个连杆的坐标系根据其所连接的连杆编号命名。例如，坐标系{2} 是刚性地连接到连杆 2 的。每个坐标系的 $z_i$ 轴与关节轴 $i$ 共线，每个连杆 $i$ 有两个关节轴， $z_i$ 和 $z_{i+1}$<br>
+对于 i=1,2,..., n 执行步骤 3 到步骤 6。</li>
+<li>确定 $z_i$ 和 $z_{i+1}$ 轴的公法线（Common Normal） 或者交点。坐标系 {i}的原点 $O_i$ 被设置在公法线与 $z_i$ 轴的交点处。</li>
+<li>指定 $z_i$ 轴为第 $i$ 个关节的运动轴方向。</li>
+<li>指定 $x_i$ 轴沿着 $z_i$ 和 $z_{i+1}$ 轴的公法线方向。如果 $z_i$ 和 $z_{i+1}$ 轴相交，则 $x_i$ 垂直于 $z_i$ 和 $z_{i+1}$ 轴所在的平面；如果 $z_i$ 和 $z_{i+1}$ 轴平行，则有无数条公法线，我们选择和上一个关节共线的公法线作为 $x_i$ 轴。</li>
+<li>通过右手定则和叉乘找到 $y_i$
+</li>
+<li>指定末端执行器的坐标系：<br>
+a. 如果 joint n 是旋转关节， $x_n$ 设置为 $\theta = 0$ 时的 $x_{n-1}$ 方向。坐标系 {n}的原点 $O_n$ 被设置使得参数 $d_n = 0$ 。<br>
+b.  如果关节 n 是平移关节（Prismatic Joint）， $x_n$ 轴被选择为当 $\theta_n = 0$ 时的初始方向。原点 $O_n$ 被设置在 $x_{n-1}$ 轴与 $z_n$ 轴的交点处, 此时 $d_n = 0$ .</li>
+<li>建立 DH 表格：（表头第二个值为 $\alpha_{i-1}$ ）</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/1ed15b04dbb3d596c3511e626c5be603e221961f732603eb587fc41f52d2304b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323730383938332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/1ed15b04dbb3d596c3511e626c5be603e221961f732603eb587fc41f52d2304b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323730383938332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132708983.png?imageSlim" style="max-width: 100%;"></a></p>
+<ol start="9">
+<li>计算 $^0T_n = ^0T_1 ^1T_2...^{n-1}T_n$ 得到末端执行器坐标系在 Base 坐标系下的表示。</li>
+</ol>
+<h1>5. Case Studies</h1>
+<ol>
+<li>平面两轴机械臂</li>
+</ol>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/caaea0e83fea4ee8f089e2b35682fef561344a056ffcbfcea5a310f588d9642a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323735383434312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/caaea0e83fea4ee8f089e2b35682fef561344a056ffcbfcea5a310f588d9642a/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323735383434312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132758441.png?imageSlim" style="max-width: 100%;"></a></p>
+<h2>5.1. Classical DH</h2>
+<p>机械臂由两个转动轴组成，对于转动轴 $d=0$<br>
+坐标系的建立如下图：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/25a0d773ab2b07c382298acf6ce75d383dc147b88f5eaa025d06f4d0968783eb/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323934333836302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/25a0d773ab2b07c382298acf6ce75d383dc147b88f5eaa025d06f4d0968783eb/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133323934333836302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117132943860.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>写出标准 DH 参数表格：</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>Link i</th>
+<th><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/e55a7033eac8156d58ee4388f635bb81a7ee8d9c71bb5eeaceb3cfec1c86c04e/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f35643439366133623837323037336239306533623932306361636663336463362e737667"><img src="https://camo.githubusercontent.com/e55a7033eac8156d58ee4388f635bb81a7ee8d9c71bb5eeaceb3cfec1c86c04e/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f35643439366133623837323037336239306533623932306361636663336463362e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/5d496a3b872073b90e3b920cacfc3dc6.svg" style="max-width: 100%;"></a></th>
+<th><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/63098c15eb15acef09529ef39d1815ad0e85869deb7434113b4255539c1f4fe3/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64333830656663323034343066373839326539383166373762363939353164632e737667"><img src="https://camo.githubusercontent.com/63098c15eb15acef09529ef39d1815ad0e85869deb7434113b4255539c1f4fe3/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64333830656663323034343066373839326539383166373762363939353164632e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/d380efc20440f7892e981f77b69951dc.svg" style="max-width: 100%;"></a></th>
+<th><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/fbd4e2fc2e80120d5991acc635c40a407e73c23204361d0b603979b512cc8678/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f32616464643233373830366335616431616532363139633762633839653537622e737667"><img src="https://camo.githubusercontent.com/fbd4e2fc2e80120d5991acc635c40a407e73c23204361d0b603979b512cc8678/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f32616464643233373830366335616431616532363139633762633839653537622e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/2addd237806c5ad1ae2619c7bc89e57b.svg" style="max-width: 100%;"></a></th>
+<th><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/ff34fcccaf0bcbd58097ee98f635321fb08d5555168911a43ae1099bc27917bd/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f61356364363835313334636666346530393765656362646134356266333937652e737667"><img src="https://camo.githubusercontent.com/ff34fcccaf0bcbd58097ee98f635321fb08d5555168911a43ae1099bc27917bd/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f61356364363835313334636666346530393765656362646134356266333937652e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/a5cd685134cff4e097eecbda45bf397e.svg" style="max-width: 100%;"></a></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/353db79d22a2be2f1fa594d485647d218bf57f18e1d84c2076f0048965ff5ac7/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f38326331356436613036636231363764353437383939386635396661306562322e737667"><img src="https://camo.githubusercontent.com/353db79d22a2be2f1fa594d485647d218bf57f18e1d84c2076f0048965ff5ac7/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f38326331356436613036636231363764353437383939386635396661306562322e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/82c15d6a06cb167d5478998f59fa0eb2.svg" style="max-width: 100%;"></a></td>
+<td>0</td>
+<td>0</td>
+<td><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3d2e9008d01b474c010bd0bf74979b9a500987bce0ec49077b7a001fc0cd4079/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64656130313334356339643732323562656463326238316535346636663236372e737667"><img src="https://camo.githubusercontent.com/3d2e9008d01b474c010bd0bf74979b9a500987bce0ec49077b7a001fc0cd4079/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f64656130313334356339643732323562656463326238316535346636663236372e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/dea01345c9d7225bedc2b81e54f6f267.svg" style="max-width: 100%;"></a></td>
+</tr>
+<tr>
+<td>2</td>
+<td><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0d6ceadb557dd973e909acc6329b0f691850b20f5eb52792b2bcf15713b62d0d/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f39343838656331326437323563656466623139323563653332643637346533662e737667"><img src="https://camo.githubusercontent.com/0d6ceadb557dd973e909acc6329b0f691850b20f5eb52792b2bcf15713b62d0d/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f39343838656331326437323563656466623139323563653332643637346533662e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/9488ec12d725cedfb1925ce32d674e3f.svg" style="max-width: 100%;"></a></td>
+<td>0</td>
+<td>0</td>
+<td><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5180c7be35fa75c2d632392bf067524c20aebc269c39fa34e598cb289e286669/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f62373833626336653231653763633161663638333939363663613334646134652e737667"><img src="https://camo.githubusercontent.com/5180c7be35fa75c2d632392bf067524c20aebc269c39fa34e598cb289e286669/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f5f5f6c617465782f62373833626336653231653763633161663638333939363663613334646134652e737667" alt="" data-canonical-src="https://cdn.nlark.com/yuque/__latex/b783bc6e21e7cc1af6839966ca34da4e.svg" style="max-width: 100%;"></a></td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>根据顺序 $\theta,d,a,\alpha$ 构造出 $T$ ，注意 $\theta$ 是绕 $z$ 轴的旋转， $\alpha$ 是绕 x 轴的旋转</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/13e686cbad7b86819af6784ab9dba5e2b91d3944d3f25ab9b5e0959ef8874826/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035303031322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/13e686cbad7b86819af6784ab9dba5e2b91d3944d3f25ab9b5e0959ef8874826/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035303031322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133050012.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/810b0847fe14497845e606da22106cc5ac467691007676ed3e1092c943568190/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035333537322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/810b0847fe14497845e606da22106cc5ac467691007676ed3e1092c943568190/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035333537322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133053572.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d5b994f85f43b9a8d010ade136bffee5b0eb73c92fbbe2799b84e3ca5cbbaaae/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035383135352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d5b994f85f43b9a8d010ade136bffee5b0eb73c92fbbe2799b84e3ca5cbbaaae/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333035383135352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133058155.png?imageSlim" style="max-width: 100%;"></a></p>
+<h2>5.2. Modified DH</h2>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/86ee9f9725f4d25373761ab17aa8f8e42903f1e0cbafc0085e2907c25ad4a324/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333130383835392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/86ee9f9725f4d25373761ab17aa8f8e42903f1e0cbafc0085e2907c25ad4a324/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333130383835392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133108859.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>需要注意的是 Base 坐标系的构建，Base 坐标系 $z_0$ 和 Link 1 的坐标系 $z_1$ 重合，保证 $a_0=0$ 和 $\alpha_0=0$ ,<br>
+并且由于 Joint 1 是旋转轴，那么 $d_1=0$ ，所以在 $\theta_1=0$ 时，Base 坐标系和 Link 1 的坐标系完全重合。<br>
+写出 DH 表：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/b424fa9a454d700fb293f9139a899aae11ce9a545442f2811ad6b2baaeb02eb9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333132383039382e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/b424fa9a454d700fb293f9139a899aae11ce9a545442f2811ad6b2baaeb02eb9/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333132383039382e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133128098.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>根据 $\alpha,a,\theta,d$ 的顺序（先 x 轴，再 z 轴。RTRT）, 计算变换矩阵</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/c4cb2ab44291e0d35737fcbd67f2de310f06f815fcbae305dbda4c87948a2ed7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333230363139332e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/c4cb2ab44291e0d35737fcbd67f2de310f06f815fcbae305dbda4c87948a2ed7/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333230363139332e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133206193.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a07c2e0c1a8c346a3a8927c215f3bcc6cbb379f48d43110d6388859536315852/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333231323733352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/a07c2e0c1a8c346a3a8927c215f3bcc6cbb379f48d43110d6388859536315852/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333231323733352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133212735.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>注意，最后一个 Link 2 的长度 $a_2$ 并没有出现在 Modified DH 的变换中，因为在 Modified D-H 方法中，最后一个坐标系（末端执行器坐标系）的原点位于最后一个关节轴 $z_n$ 上。由于正向运动学的终点是末端坐标系，最后一个连杆的长度并没有影响到末端执行器的位姿（位置和方向）。</p>
+<h2>5.3 Difference between Classical and Modified Conventions</h2>
+<p>Classical DH 和 Modified DH 相同点是都是将坐标系和 Link 固连，但是不同点是坐标系建立的位置不同。<br>
+Modified DH 将坐标系建立在 Link 的近端（例如连杆 $Link_{i}$ , 连接 $Joint_{i}$ 和 $Joint_{i+1}$ ，近端指的是 $Joint_{i}$ 一端，远端是 $Joint_{i+1}$ ）<br>
+下图中 SDH 就是 Classical DH 也记为 Standard DH</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/76f511171e9830156197851226b9ce6eeda36f975ef14478f1f78fd26fe834b3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333335313832372e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/76f511171e9830156197851226b9ce6eeda36f975ef14478f1f78fd26fe834b3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333335313832372e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133351827.png?imageSlim" style="max-width: 100%;"></a></p>
+<h1>6. Conclusion</h1>
+<p>Classical DH 和 Modified DH 最大的区别是坐标系建立的位置不同。Modified DH 可能更加符合人的直观感觉。<br>
+Modified DH 最后一个坐标系建在最后一个 joint 上，如果需要到执行器的变换，还需要乘一个到执行器坐标系的齐次矩阵。</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d8bf48f112437bef0f885d5abd398288de87444149ab8e6416f25ab427d44602/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333435323534342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d8bf48f112437bef0f885d5abd398288de87444149ab8e6416f25ab427d44602/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303131373133333435323534342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250117133452544.png?imageSlim" style="max-width: 100%;"></a></p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>

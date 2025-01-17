@@ -1,5 +1,19 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Thu, 19 Dec 2024 03:32:21 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>CUDA Nsight Compute性能分析</title><link>https://wwwht.github.io/post/CUDA%20Nsight%20Compute-xing-neng-fen-xi.html</link><description>参考：&#13;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Fri, 17 Jan 2025 05:36:32 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>DH参数详解</title><link>https://wwwht.github.io/post/DH-can-shu-xiang-jie.html</link><description>![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim)&#13;
+参考：[873_ic29-2014.pdf](https://www.yuque.com/attachments/yuque/0/2025/pdf/2636058/1736234338923-b5f416dc-9488-45dd-b362-4c3de6127c4d.pdf)&#13;
+# 1. Kinematic Chain&#13;
+&#13;
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140658779.png?imageSlim)&#13;
+&#13;
+&gt; A robotic manipulator may be considered as set of links connected in a chain called **kinematic chain** by joints (figure 1).&#13;
+&#13;
+维基百科中关于 Kinematic Chain 的概念：&#13;
+&#13;
+&gt; In [mechanical engineering](https://en.wikipedia.org/wiki/Mechanical_engineering), a kinematic chain is an assembly of [rigid bodies](https://en.wikipedia.org/wiki/Rigid_body) connected by [joints](https://en.wikipedia.org/wiki/Joint_(mechanics)) to provide constrained motion that is the [mathematical model](https://en.wikipedia.org/wiki/Mathematical_model) for a [mechanical system](https://en.wikipedia.org/wiki/Mechanical_system)&#13;
+&#13;
+简单理解就是由刚体和 joint 组成的一个系统，可以做一些受约束的运动，比如人的手臂是或者机械臂，都可以抽象成一个 Kinematic Chain.&#13;
+&#13;
+重点理解 joint 和 link 的概念：joint 是关节，常见的有移动副（prismatic joint）和转动副（revolute joint）如图二。</description><guid isPermaLink="true">https://wwwht.github.io/post/DH-can-shu-xiang-jie.html</guid><pubDate>Fri, 17 Jan 2025 05:36:11 +0000</pubDate></item><item><title>CUDA Nsight Compute性能分析</title><link>https://wwwht.github.io/post/CUDA%20Nsight%20Compute-xing-neng-fen-xi.html</link><description>参考：&#13;
 https://zhuanlan.zhihu.com/p/707107808&#13;
 [BBuf](https://github.com/BBuf/how-to-optim-algorithm-in-cuda/blob/master/cuda-mode/CUDA-MODE%20%E7%AC%AC%E4%B8%80%E8%AF%BE%E8%AF%BE%E5%90%8E%E5%AE%9E%E6%88%98%EF%BC%88%E4%B8%8A%EF%BC%89.md)&#13;
 [官方文档](https://docs.nvidia.com/nsight-compute/NsightCompute/index.html#quickstart)&#13;
