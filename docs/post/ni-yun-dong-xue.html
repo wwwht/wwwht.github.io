@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekBSZ.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="参考: [Inverse Kinematics Techniques in Computer Graphics: A Survey](http://andreasaristidou.com/publications/papers/IK_survey.pdf)
+[逆运动学-知乎]([https://zhuanlan.zhihu.com/p/450749372](https://zhuanlan.zhihu.com/p/450749372))
+[逆运动学-知乎 2]([https://www.zhihu.com/question/400650301/answer/1282203168](https://www.zhihu.com/question/400650301/answer/1282203168))
+[https://www.cnblogs.com/21207-iHome/p/9452896.html](https://www.cnblogs.com/21207-iHome/p/9452896.html)
+[https://zhuanlan.zhihu.com/p/326387013](https://zhuanlan.zhihu.com/p/326387013)
+
+通过这篇综述学习一下解逆运动学的主要方法.  
+
+综述中主要介绍了 4 个类别的方法, 分别是**解析法 (analytical), 数值法 (numerical), 数据驱动方法 (data-driven) 和混合方法 (hybrid)**. 
+
+# 1. Intro
+逆运动学简单来说就是已知末端执行器的位姿, 求解各个关节的变量 $q$ , 在 DH 参数的介绍中, 我们知道了末端执行器的位姿和各个关节变量这件的关系可以抽象成:
+
+$$
+r = f(\theta)
+$$
+
+其中 $r$ 表示末端执行器的的变量 $r = [r_1, r_2, r_3, ..., r_m]$ 其中 $m$ 表示末端执行器的自由度, 例如只考虑空间中的位置, 那么 $m=3$ ,如果加上转动 $m=6$ .
+
+$\theta$ 表示所有关节变量组成的向量. 逆运动学就是求解 $\theta$ 的过程.
+
+衡量逆运动学方法主要从三个方面: 
+1. **运动的平滑度（smoothness of the produced motion）**：IK 求解器应该能够生成平滑的运动轨迹，避免突兀或不自然的动作。">
+<meta property="og:title" content="逆运动学">
+<meta property="og:description" content="参考: [Inverse Kinematics Techniques in Computer Graphics: A Survey](http://andreasaristidou.com/publications/papers/IK_survey.pdf)
+[逆运动学-知乎]([https://zhuanlan.zhihu.com/p/450749372](https://zhuanlan.zhihu.com/p/450749372))
+[逆运动学-知乎 2]([https://www.zhihu.com/question/400650301/answer/1282203168](https://www.zhihu.com/question/400650301/answer/1282203168))
+[https://www.cnblogs.com/21207-iHome/p/9452896.html](https://www.cnblogs.com/21207-iHome/p/9452896.html)
+[https://zhuanlan.zhihu.com/p/326387013](https://zhuanlan.zhihu.com/p/326387013)
+
+通过这篇综述学习一下解逆运动学的主要方法.  
+
+综述中主要介绍了 4 个类别的方法, 分别是**解析法 (analytical), 数值法 (numerical), 数据驱动方法 (data-driven) 和混合方法 (hybrid)**. 
+
+# 1. Intro
+逆运动学简单来说就是已知末端执行器的位姿, 求解各个关节的变量 $q$ , 在 DH 参数的介绍中, 我们知道了末端执行器的位姿和各个关节变量这件的关系可以抽象成:
+
+$$
+r = f(\theta)
+$$
+
+其中 $r$ 表示末端执行器的的变量 $r = [r_1, r_2, r_3, ..., r_m]$ 其中 $m$ 表示末端执行器的自由度, 例如只考虑空间中的位置, 那么 $m=3$ ,如果加上转动 $m=6$ .
+
+$\theta$ 表示所有关节变量组成的向量. 逆运动学就是求解 $\theta$ 的过程.
+
+衡量逆运动学方法主要从三个方面: 
+1. **运动的平滑度（smoothness of the produced motion）**：IK 求解器应该能够生成平滑的运动轨迹，避免突兀或不自然的动作。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/ni-yun-dong-xue.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>逆运动学</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+<style>#postBody{font-size:20px}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">逆运动学</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/6" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>参考: <a href="http://andreasaristidou.com/publications/papers/IK_survey.pdf" rel="nofollow">Inverse Kinematics Techniques in Computer Graphics: A Survey</a><br>
+逆运动学-知乎<br>
+逆运动学-知乎 2<br>
+<a href="https://www.cnblogs.com/21207-iHome/p/9452896.html" rel="nofollow">https://www.cnblogs.com/21207-iHome/p/9452896.html</a><br>
+<a href="https://zhuanlan.zhihu.com/p/326387013" rel="nofollow">https://zhuanlan.zhihu.com/p/326387013</a></p>
+<p>通过这篇综述学习一下解逆运动学的主要方法.</p>
+<p>综述中主要介绍了 4 个类别的方法, 分别是<strong>解析法 (analytical), 数值法 (numerical), 数据驱动方法 (data-driven) 和混合方法 (hybrid)</strong>.</p>
+<h1>1. Intro</h1>
+<p>逆运动学简单来说就是已知末端执行器的位姿, 求解各个关节的变量 $q$ , 在 DH 参数的介绍中, 我们知道了末端执行器的位姿和各个关节变量这件的关系可以抽象成:</p>
+<p>$$
+r = f(\theta)
+$$</p>
+<p>其中 $r$ 表示末端执行器的的变量 $r = [r_1, r_2, r_3, ..., r_m]$ 其中 $m$ 表示末端执行器的自由度, 例如只考虑空间中的位置, 那么 $m=3$ ,如果加上转动 $m=6$ .</p>
+<p>$\theta$ 表示所有关节变量组成的向量. 逆运动学就是求解 $\theta$ 的过程.</p>
+<p>衡量逆运动学方法主要从三个方面:</p>
+<ol>
+<li><strong>运动的平滑度（smoothness of the produced motion）</strong>：IK 求解器应该能够生成平滑的运动轨迹，避免突兀或不自然的动作。</li>
+<li><strong>可扩展性（scalability）</strong>：IK 求解器应该能够处理规模较大的问题，例如更复杂的机械臂或动画角色。</li>
+<li><strong>计算成本（computational cost）</strong>：IK 计算所需的时间和资源应尽可能少，以提高实时性和效率。</li>
+</ol>
+<p><strong>可扩展性意味着更高的计算成本</strong>：当 IK 需要处理更复杂的约束条件或更长的运动学链（如具有大量关节和自由度的系统）时，计算量会增加。</p>
+<p>相比于正运动学, IK 可能存在多解, 单一解或者无解的情况.<br>
+解的数量取决于目标的位置和/或运动链的自由度（DoFs）。</p>
+<ul>
+<li>没有解的情况（Over-constrained）如果目标位置超出了运动链的可到达范围，则该目标是无法实现的。或者，当存在多个目标且这些目标间存在矛盾时，也会出现无法解的问题。这类问题被称为<strong>过约束问题（over-constrained problems）</strong></li>
+<li>有多解的情况（Under-constrained 或 Redundant）当目标是可到达的时，可能存在多个解。例如：一个有两个或更多关节的链条可以用多种不同的姿态实现同一个目标。这种情况下，IK 问题被认为是<strong>欠约束的（under-constrained）或冗余的（redundant）</strong>，可能存在无限多种解满足目标位置。</li>
+</ul>
+<p>在实际问题中, 需要根据运动链 (Kinematic Chain) 的构型, 解法的平滑度, 求解的计算成本, 给定应用的具体需求等综合考虑逆运动学的解法。</p>
+<h2>1.1 可达空间</h2>
+<p><strong>目标无法达到（unreachable target）</strong>：当目标在运动链的能力范围之外时，IK 问题的解不存在。这种情况称为“目标不可达”。</p>
+<p><strong>Reachable Workspace（可达工作空间）</strong>：指运动链末端（例如机械臂的末端执行器）可以到达的目标空间范围。</p>
+<p><strong>Dexterous Space（灵巧空间）</strong>：这是机器人运动学中的一个扩展概念。它指的是机器人可以在某一点生成的所有速度矢量所覆盖的空间（即切空间的全部范围）。这意味着机器人不仅可以到达某点，还可以在该点灵活地调整方向和速度。</p>
+<p>在求解 IK 问题之前，检查目标是否在可达空间内非常重要。如果目标不可达，那么继续尝试寻找解是浪费计算资源的。因此，预先判断目标的可达性可以显著减少处理时间，提升系统效率。</p>
+<p>在不考虑关节约束和目标方向的情况下，可以应用<strong>简单</strong>的可达性检查:<br>
+先计算目标点与基座的距离 $d$ 。目标点的距离大于所有关节连杆长度的总和（即整个运动链的最大伸展长度），此时目标超出最大范围，无法到达; 目标点的距离小于一个特定下限值（即某些关节重叠或卷曲时的最小收缩长度），此时目标位于一个过小的范围内，也无法到达.</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d2b2cf993f6b701cf33f4227f78c9f36416b13bbf42d1fea7c689348398cd229/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d2b2cf993f6b701cf33f4227f78c9f36416b13bbf42d1fea7c689348398cd229/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250120152839140.png?imageSlim" style="max-width: 100%;"></a></p>
+<h1>2. 解析解（Analytic Solutions）</h1>
+<p>先简单概述一下优缺点：<br>
+优点：速度快（us级），精度高，能得到所有解；<br>
+缺点：通用性差，适用性弱（仅针对特定结构可解，例如：满足Pieper准则）</p>
+<blockquote>
+<p>Pieper 准则论文<br>
+[1]. Pieper, Donald Lee. The kinematics of manipulators under computer control. Stanford University, 1969.</p>
+</blockquote>
+<p>计算机器人运动学逆解首先要考虑可解性(solvability)，即考虑无解、多解等情况。在机器人工作空间外的目标点显然是无解的。</p>
+<p>串联机械臂有逆运动学解析解的充分条件是满足Pieper准则。即如果机器人满足两个充分条件中的一个，就会得到封闭解，这两个条件是：</p>
+<ul>
+<li>三个相邻关节轴相交于一点；</li>
+<li>三个相邻关节轴相互平行。</li>
+</ul>
+<p>现在的大多数商品化的工业机器人在设计构型时，都会尽可能满足满足Pieper准则，因为解析法求解能够很快的使用较少的算力，使用较低成本的控制器就能求解，之后随着芯片算力的提升，感觉在未来，机器人公司也会在是否采用满足解析解的构型和采用特定构型并开发对应的逆解算法之间找一个平衡。</p>
+<h1>3. 数值法</h1>
+<p>以下是来自<a href="https://zhuanlan.zhihu.com/p/450749372" rel="nofollow">知乎</a>的一段: 看不太懂..</p>
+<blockquote>
+<p>特点：通用性高，但是求解速度较慢（ms级）。<br>
+除了一些特殊的机械臂构型外，机械臂逆运动学问题很难用解析解求解，因此在许多情况下会使用数值解求解。<br>
+<a href="https://zhida.zhihu.com/search?content_id=188296896&amp;content_type=Article&amp;match_order=1&amp;q=Newton-Raphson&amp;zhida_source=entity" rel="nofollow">Newton-Raphson</a>（NR）是数值解的一种方法。它<strong>需要基本的雅可比矩阵</strong>。然而，当且仅当原始方程的函数具有逆函数，且原始方程可解时，NR方法才会成功。从运动学的角度来看，前一个条件意味着机器人需要非冗余，机器人在从初始配置到最终配置的运动过程中不通过奇异点。后一个条件意味着机械臂的期望位置和方向需要在机器人的工作空间内，是可解的。由于这些限制，NR方法不能保证全局收敛性，因此它在很大程度上取决于初始值。</p>
+</blockquote>
+<blockquote>
+<p>奇异性问题与基本雅可比矩阵的性质密切相关，这主要在<strong>微分逆运动学（differential inverse kinematics）相关领域</strong> 中进行了讨论，<strong>Whitney提出了</strong>使用 <a href="https://zhida.zhihu.com/search?content_id=188296896&amp;content_type=Article&amp;match_order=1&amp;q=Moore%E2%80%93Penrose&amp;zhida_source=entity" rel="nofollow">Moore–Penrose</a> 的广义逆矩阵来解决这个问题。无论原始雅可比矩阵的秩如何，都通过构型的最小偏差使约束方程的残差最小化。<strong>Nakamura and Hanafusa指出</strong>，Whitney的方法不能解决构型在奇异点附近抖动的问题，并提出了引入阻尼因子的奇异鲁棒逆矩阵（singularity-robust inverse matrix）。<strong>Wampler 也提出</strong>了一种类似的方法，并提到它涉及到 <a href="https://zhida.zhihu.com/search?content_id=188296896&amp;content_type=Article&amp;match_order=1&amp;q=Levenberg%E2%80%93Marquardt&amp;zhida_source=entity" rel="nofollow">Levenberg–Marquardt</a>（LM）方法的框架。</p>
+</blockquote>
+<blockquote>
+<p>可解性的问题和奇异点的问题一样需要考虑。大多数情况下，很难提前知道方程是否是可解的。一个合理的思想是用<strong>残差极小化代替逆运动学中的根查找问题</strong>。基于这一想法，有使用了<strong>最陡下降（ steepest descent，SD)</strong> 和<strong>变量度量（Variable metric，VM）的方法</strong>。但前者的收敛速度较慢，而后者的可靠性较低，因此经常处于局部极小值。合理快速的解决方案是一类在每一步迭代中利用 DIK 的梯度方法。LM 方法在其中具有较高的计算稳定性。虽然 LM 方法的收敛性能取决于阻尼因子的选择，但这个问题到目前为止还没有得到充分的讨论。Tomomichi Sugihara 提出了一种选择 LM 方法的阻尼因子的方法，该方法对奇异性、可解性和快速收敛问题具有鲁棒性。通过一种相当简单的利用残差平方范数作为阻尼因子的方法来实现鲁棒性和收敛性，并通过对阻尼因子略有偏置来解决在奇异点附近，计算不稳定的问题。</p>
+</blockquote>
+<p>数值方法涵盖了需要一组迭代才能获得满意解决方案的方法。迭代方法使用要最小化的成本函数来制定问题。数值方法族一般可分为三类：<strong>雅可比法(Jacobian)、牛顿法(Newton)和启发式(Heuristic)方法</strong>。</p>
+<h2>3.1 Jacobian inverse methods</h2>
+<p>Jacobian $J$  是一个偏导数矩阵，它描述了整个链条系统（机器人关节或机械臂）中<strong>关节参数</strong>（例如关节角度 $\theta$ ）与<strong>末端执行器位置和方向</strong> 之间的关系。</p>
+<p>简单来说， $J$ 用于表示关节的微小变化如何影响末端执行器的变化。<br>
+Jacobian 提供了一种线性近似的方法，逐步调整关节的角度，使末端执行器的实际位置和方向逐渐接近目标位置和方向。<br>
+<strong>线性近似：</strong> Jacobian 方法不直接给出最终解，而是通过一系列迭代来逼近目标位置。在每一步中，根据 Jacobian 的线性近似，计算需要调整的关节角度变化。<br>
+公式:</p>
+<p>$$
+\dot{s}=J(θ) \dot{θ}
+$$</p>
+<p>这个公式表示 <strong>前向动力学方程（Forward Dynamics Equation）</strong>：</p>
+<ul>
+<li>
+$\dot{s}$ 表示末端执行器的速度（位置和方向的时间导数）。</li>
+<li>
+$J(\theta)$ 雅可比矩阵，它依赖于当前的关节角度 θ。</li>
+<li>
+$\dot{\theta}$ 关节角度的变化速率（时间导数）。</li>
+</ul>
+<p>迭代过程:</p>
+<ul>
+<li><strong>初始状态：</strong> 从机械臂的初始关节角度配置开始，计算其末端执行器位置和方向。</li>
+<li><strong>误差计算：</strong> 比较末端执行器的当前位置与目标位置，计算误差。</li>
+<li><strong>关节调整：</strong> 根据 Jacobian 计算出需要调整的关节角度增量，使误差逐步减少。</li>
+<li><strong>重复迭代：</strong> 不断调整关节角度，直到误差足够小，末端执行器到达目标位置和方向。</li>
+</ul>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/e285fbd9ceebdbc6f62b17124af5a3e3366ab375ac69fe8c6ea9f3ea79cd4f42/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/e285fbd9ceebdbc6f62b17124af5a3e3366ab375ac69fe8c6ea9f3ea79cd4f42/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122143645714.png?imageSlim" style="max-width: 100%;"></a><br>
+<strong>k</strong>：末端执行器（end effectors）的数量。<br>
+<strong>n</strong>：机械臂的关节（joints）的数量。<br>
+因此，Jacobian 矩阵 $J$ 的理论维度是 <strong>k×n</strong> .<br>
+在实践中，<strong>每个末端执行器的位置和方向通常用 3 个标量（x, y, z）表示</strong>。<br>
+为了便于计算，JJJ 被展开为 $3k * n$ 的标量矩阵, 如果再考虑上姿态, 那么就会扩展成 $6k * n$</p>
+<p>Jacobian 矩阵 $J$ 的元素 $J_{ij}$ ​ 表示末端执行器位置 $s_i$ 对关节角度 $\theta_j$ ​ 的偏导数：</p>
+<p>$$
+J(\theta)_{ij} = \frac{\partial s_i}{\partial \theta_j}.
+$$</p>
+<p>对于旋转关节，使用公式：</p>
+<p>$$
+\frac{\partial s_i}{\partial \theta_j} = \mathbf{v}_j \times (\mathbf{s}_i - \mathbf{p}_j)
+$$</p>
+<p>其中:</p>
+<ul>
+<li>
+$v_j$ 是关节 $j$ 的旋转轴方向单位向量。</li>
+<li>
+$s_i$  ​末端执行器 i 的位置。</li>
+<li>
+$p_j$ 关节 $j$ 的位置</li>
+</ul>
+<p>误差计算:<br>
+给定目标末端执行器位置 $t_i$ ​ 和当前末端执行器位置 $s_i$  ​，误差定义为：</p>
+<p>$$
+e_i = t_i - s_i(\theta)
+$$</p>
+<p>过对关节角度的微小变化 $\Delta \theta$ ，末端执行器的位置变化 $\Delta s$ 可以近似为：</p>
+<p>$$
+\Delta s \approx J(\theta) \Delta \theta
+$$</p>
+<p>为了使位置误差最小化，计算关节角度变化：</p>
+<p>$$
+\Delta \theta \approx J^{-1} e
+$$</p>
+<p>其中 $e$ 是目标位置和当前实际位置的误差向量。通过计算 Δθ，调整关节角度 θ，使末端执行器的位置和姿态更接近目标。</p>
+<p><strong>Jacobian 的潜在问题:</strong><br>
+矩阵非方针, 不可逆-&gt;</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6c414936f91db68245544989c296c50781031c0357628a824e77ea22bacd1949/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/6c414936f91db68245544989c296c50781031c0357628a824e77ea22bacd1949/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150302332.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><strong>Jacobian 的一阶近似</strong>:</p>
+<ul>
+<li><strong>独立性假设：</strong>
+<ul>
+<li>Jacobian 只考虑了<strong>每个关节的独立影响</strong>，忽略了关节之间的复杂依赖关系（例如，一个关节的变化可能会影响到其“子关节”）。</li>
+<li>这种假设使得 Jacobian 是一种<strong>一阶近似（first-order approximation）</strong>，在大范围运动中可能不够准确。</li>
+</ul>
+</li>
+<li><strong>刚体模型：</strong>
+<ul>
+<li>在一阶近似中，所有子关节的连杆被简化为一个单一的刚体，这可能无法完全反映机械臂的复杂运动行为。</li>
+</ul>
+</li>
+</ul>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/743940435a2c1f33dd477ac46262cebce57cc86b3c4f3ddefb5c8c4eb807ce19/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/743940435a2c1f33dd477ac46262cebce57cc86b3c4f3ddefb5c8c4eb807ce19/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150654806.png?imageSlim" style="max-width: 100%;"></a></p>
+<h3>3.1.1 Jacobian transpose</h3>
+<p>未完</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>

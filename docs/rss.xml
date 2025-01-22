@@ -1,5 +1,27 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Fri, 17 Jan 2025 05:36:32 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>DH参数详解</title><link>https://wwwht.github.io/post/DH-can-shu-xiang-jie.html</link><description>![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim)&#13;
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Wed, 22 Jan 2025 07:10:12 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>逆运动学</title><link>https://wwwht.github.io/post/ni-yun-dong-xue.html</link><description>参考: [Inverse Kinematics Techniques in Computer Graphics: A Survey](http://andreasaristidou.com/publications/papers/IK_survey.pdf)
+[逆运动学-知乎]([https://zhuanlan.zhihu.com/p/450749372](https://zhuanlan.zhihu.com/p/450749372))
+[逆运动学-知乎 2]([https://www.zhihu.com/question/400650301/answer/1282203168](https://www.zhihu.com/question/400650301/answer/1282203168))
+[https://www.cnblogs.com/21207-iHome/p/9452896.html](https://www.cnblogs.com/21207-iHome/p/9452896.html)
+[https://zhuanlan.zhihu.com/p/326387013](https://zhuanlan.zhihu.com/p/326387013)
+
+通过这篇综述学习一下解逆运动学的主要方法.  
+
+综述中主要介绍了 4 个类别的方法, 分别是**解析法 (analytical), 数值法 (numerical), 数据驱动方法 (data-driven) 和混合方法 (hybrid)**. 
+
+# 1. Intro
+逆运动学简单来说就是已知末端执行器的位姿, 求解各个关节的变量 $q$ , 在 DH 参数的介绍中, 我们知道了末端执行器的位姿和各个关节变量这件的关系可以抽象成:
+
+$$
+r = f(\theta)
+$$
+
+其中 $r$ 表示末端执行器的的变量 $r = [r_1, r_2, r_3, ..., r_m]$ 其中 $m$ 表示末端执行器的自由度, 例如只考虑空间中的位置, 那么 $m=3$ ,如果加上转动 $m=6$ .
+
+$\theta$ 表示所有关节变量组成的向量. 逆运动学就是求解 $\theta$ 的过程.
+
+衡量逆运动学方法主要从三个方面: 
+1. **运动的平滑度（smoothness of the produced motion）**：IK 求解器应该能够生成平滑的运动轨迹，避免突兀或不自然的动作。</description><guid isPermaLink="true">https://wwwht.github.io/post/ni-yun-dong-xue.html</guid><pubDate>Wed, 22 Jan 2025 07:09:49 +0000</pubDate></item><item><title>DH参数详解</title><link>https://wwwht.github.io/post/DH-can-shu-xiang-jie.html</link><description>![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250114140729096.png?imageSlim)&#13;
 参考：[873_ic29-2014.pdf](https://www.yuque.com/attachments/yuque/0/2025/pdf/2636058/1736234338923-b5f416dc-9488-45dd-b362-4c3de6127c4d.pdf)&#13;
 # 1. Kinematic Chain&#13;
 &#13;
