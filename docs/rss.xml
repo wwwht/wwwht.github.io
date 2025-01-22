@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Wed, 22 Jan 2025 07:10:12 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>逆运动学</title><link>https://wwwht.github.io/post/ni-yun-dong-xue.html</link><description>参考: [Inverse Kinematics Techniques in Computer Graphics: A Survey](http://andreasaristidou.com/publications/papers/IK_survey.pdf)
-[逆运动学-知乎]([https://zhuanlan.zhihu.com/p/450749372](https://zhuanlan.zhihu.com/p/450749372))
-[逆运动学-知乎 2]([https://www.zhihu.com/question/400650301/answer/1282203168](https://www.zhihu.com/question/400650301/answer/1282203168))
+<rss xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0"><channel><title>wwwht</title><link>https://wwwht.github.io</link><description>Daily notes</description><copyright>wwwht</copyright><docs>http://www.rssboard.org/rss-specification</docs><generator>python-feedgen</generator><image><url>https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg</url><title>avatar</title><link>https://wwwht.github.io</link></image><lastBuildDate>Wed, 22 Jan 2025 07:16:46 +0000</lastBuildDate><managingEditor>wwwht</managingEditor><ttl>60</ttl><webMaster>wwwht</webMaster><item><title>逆运动学</title><link>https://wwwht.github.io/post/ni-yun-dong-xue.html</link><description>参考:   
+[Inverse Kinematics Techniques in Computer Graphics: A Survey](http://andreasaristidou.com/publications/papers/IK_survey.pdf)
+[逆运动学-知乎](https://zhuanlan.zhihu.com/p/450749372)
+[逆运动学-知乎2](https://www.zhihu.com/question/400650301/answer/1282203168)  
 [https://www.cnblogs.com/21207-iHome/p/9452896.html](https://www.cnblogs.com/21207-iHome/p/9452896.html)
 [https://zhuanlan.zhihu.com/p/326387013](https://zhuanlan.zhihu.com/p/326387013)
 
