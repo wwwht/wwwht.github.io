@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekVercount.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="![image.png|450](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250826110011251.png?imageSlim)
+好久没有更新了，今天开个新坑，机器人动力学
+
+# 1. Introduction
+
+## 1.1 Dynamics Algorithms
+
+刚体系统的动力学由其运动方程描述，该方程规定了作用在系统上的力与其产生的加速度之间的关系。">
+<meta property="og:title" content="机器人动力学-1">
+<meta property="og:description" content="![image.png|450](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250826110011251.png?imageSlim)
+好久没有更新了，今天开个新坑，机器人动力学
+
+# 1. Introduction
+
+## 1.1 Dynamics Algorithms
+
+刚体系统的动力学由其运动方程描述，该方程规定了作用在系统上的力与其产生的加速度之间的关系。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/ji-qi-ren-dong-li-xue--1.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>机器人动力学-1</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+.copy-feedback {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 50px;
+    color: var(--color-fg-on-emphasis);
+    background-color: var(--color-fg-muted);
+    border-radius: 3px;
+    padding: 5px 8px;
+    font-size: 12px;
+}
+</style>
+<style>#postBody{font-size:18px}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">机器人动力学-1</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/7" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f3b9ffed322e6896c8549b1b38b42dca28feca50ac67872cafd1d0e214b3c807/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f3b9ffed322e6896c8549b1b38b42dca28feca50ac67872cafd1d0e214b3c807/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d" alt="image.png|450" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250826110011251.png?imageSlim" style="max-width: 100%;"></a><br>
+好久没有更新了，今天开个新坑，机器人动力学</p>
+<h1>1. Introduction</h1>
+<h2>1.1 Dynamics Algorithms</h2>
+<p>刚体系统的动力学由其运动方程描述，该方程规定了作用在系统上的力与其产生的加速度之间的关系。我们将主要关注两种特定计算的算法：</p>
+<p>==<strong>正向动力学</strong>==：计算给定刚体系统在给定外力作用下的加速度响应；<br>
+==<strong>逆向动力学</strong>==：计算必须施加于给定刚体系统以产生特定加速度响应的作用力。</p>
+<p>正向动力学主要用于仿真。逆向动力学有多种用途，例如：运动控制系统、轨迹规划、机械设计，以及作为正向动力学计算的一个组成部分。在第9章中，我们将讨论第三种计算类型，称为混合动力学，其中给定部分加速度和力变量，任务是计算其余部分。</p>
+<p>Equation of motion for a rigid-body system:</p>
+<p>$$
+\boldsymbol{\tau} = \boldsymbol{H}(\boldsymbol{q}) \ddot{\boldsymbol{q}} + \boldsymbol{C}(\boldsymbol{q}, \dot{\boldsymbol{q}})
+$$</p>
+<p>它本质上就是牛顿第二定律（F=ma）在复杂多体系统（如机器人手臂、无人机）中的<strong>高级扩展形式</strong>。这个方程描述了力（τ）如何导致运动（q̈）。你可以把它想象成机器人领域的 ​<strong>​“F = ma”​</strong>。</p>
+<ul>
+<li>​<code class="notranslate">τ</code> (Torque/Force)​：相当于 ​<code class="notranslate">F</code>。它是施加在系统关节或本体上的<strong>力或力矩向量</strong>。这是“因”，是驱动系统运动的输入。</li>
+<li>​ <code class="notranslate">q̈</code> (Acceleration)​：相当于 ​ <code class="notranslate">a</code>。它是系统的<strong>加速度向量</strong>（包括线加速度和角加速度）。这是“果”，是我们希望计算或预测的输出。</li>
+<li>​<code class="notranslate">H(q)</code> (Inertia Matrix)​​：相当于 ​<code class="notranslate">m</code>。但它不是一个简单的质量，而是一个<strong>惯性矩阵​</strong>（也称作质量矩阵）。它包含了系统的所有惯性信息（质量、转动惯量），并且这个矩阵会随着机器人<strong>姿态</strong>​（即关节角度 <code class="notranslate">q</code>）的改变而改变。这是因为机器人移动时，其质量分布相对于世界坐标系发生了变化。</li>
+<li>​<code class="notranslate">C(q, q̇)</code> (Force Vector)​<strong>​：这是一个</strong>综合力向量，它代表了<strong>除了外部施加的力 <code class="notranslate">τ</code> 之外的所有其他力</strong>。它相当于 <code class="notranslate">F = ma</code> 中其他所有“杂项”力的集合。它包括：
+<ul>
+<li>​<strong>科里奥利力 (Coriolis forces)​</strong>​ 和 ​<strong>离心力 (Centrifugal forces)​</strong>​：由系统部件自身的旋转运动 (<code class="notranslate">q̇</code>) 产生。</li>
+<li>​<strong>重力 (Gravity)​</strong>​：由系统的质量和姿态 (<code class="notranslate">q</code>) 决定。</li>
+<li>​<strong>摩擦力、阻尼力等其他内力</strong>。</li>
+</ul>
+</li>
+</ul>
+<p>需要注意的是，</p>
+<ul>
+<li><strong>理论上的简化写法</strong>​：<code class="notranslate">H(q)</code> 和 <code class="notranslate">C(q, q̇)</code>
+<ul>
+<li>这种写法暗示惯性矩阵 <code class="notranslate">H</code> 和力向量 <code class="notranslate">C</code> ​<strong>只取决于</strong>机器人当前的姿态 <code class="notranslate">q</code> 和速度 <code class="notranslate">q̇</code>。</li>
+<li>这在数学上是正确的，但<strong>隐藏了一个重要前提</strong>​：这个方程是针对<strong>某一个特定的机器人</strong>而言的。</li>
+</ul>
+</li>
+<li>​<strong>实际上的精确写法</strong>​：<code class="notranslate">H(model, q)</code> 和 <code class="notranslate">C(model, q, q̇)</code>
+<ul>
+<li>这种写法明确指出了一个更根本的事实：<code class="notranslate">H</code> 和 <code class="notranslate">C</code> ​<strong>首先取决于你是哪个机器人</strong>​（由 <code class="notranslate">model</code> 定义），然后才取决于你这个机器人当前的状态 (<code class="notranslate">q</code>, <code class="notranslate">q̇</code>)。</li>
+<li>​<strong>例子</strong>​：一个工业机器人手臂和一个无人机，即使在某个瞬间摆出了一模一样的姿态 (<code class="notranslate">q</code>) 和速度 (<code class="notranslate">q̇</code>)，它们的 <code class="notranslate">H</code> 和 <code class="notranslate">C</code> 也绝对不同，因为它们的重量、结构、惯性等根本不同。这个根本性的差异就体现在 <code class="notranslate">model</code> 参数里。</li>
+</ul>
+</li>
+</ul>
+<p><strong>通过建立抽象的数学模型，我们可以编写一套通用的、强大的计算机代码，用它来计算一整大类物理系统的动力学问题，而不是为每个具体的机器人或机构都重新写一遍代码。​</strong></p>
+<ol>
+<li>​<strong>目标</strong>​：我们想用计算机<strong>模拟或控制</strong>各种机器（机器人、机械等）的物理运动。</li>
+<li>​<strong>方法</strong>​：不为每个机器都重写代码，而是追求<strong>编写通用代码</strong>。</li>
+<li>​<strong>实现途径</strong>​：
+<ul>
+<li>​<strong>第一步：抽象建模</strong>。将千差万别的物理机器，根据其连接结构抽象成两大类：​<strong>运动树</strong>或<strong>闭环系统</strong>。</li>
+<li>​<strong>第二步：分类开发算法</strong>。针对每一类系统，去开发解决不同问题（如FD/ID）的算法。</li>
+</ul>
+</li>
+<li>​<strong>最终成果</strong>​：得到一个<strong>算法工具箱</strong>。当你需要分析一个新机器时，你只需要：
+<ul>
+<li>a) 判断它属于哪一类（树 or 闭环）。</li>
+<li>b) 从工具箱里挑选适合该类别的、功能正确的算法（FD or ID）。</li>
+<li>c) 将你这个机器的具体参数（质量、长度等，即 <code class="notranslate">model</code>）输入到算法中，即可得到计算结果。</li>
+</ul>
+</li>
+</ol>
+<p>​<strong>简而言之，这段话描述了一种高效、系统化的工程研究方法：通过分类和抽象，将复杂的物理问题转化为可管理的计算机算法问题，从而实现最大程度的代码复用和计算效率。​</strong>​ 这本书的主要内容，就是详细介绍这些针对不同类别的、执行不同计算（FD/ID）的算法是如何实现的。</p>
+<h2>1.2 Spatial Vectors</h2>
+<p><strong>空间向量 (Spatial Vectors)​</strong>。它的目的是<strong>简化描述和计算</strong></p>
+<p><strong>一个刚体在三维空间中有 6 个运动自由度</strong>​：这很好理解，它可以同时在 3 个方向上<strong>移动</strong>​（前后、左右、上下）和绕 3 个轴<strong>旋转</strong>​（俯仰、偏航、翻滚）。</p>
+<p><strong>但我们通常用 3D 向量来表达它的动力学</strong>​：这意味着我们需要<strong>两个独立的方程</strong>来描述一个刚体的完整运动：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/2c3b1ba9427a44732e601f994b5d29b5ac3de8b18f60c5b255cf540bc3be556e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/2c3b1ba9427a44732e601f994b5d29b5ac3de8b18f60c5b255cf540bc3be556e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091207171.png?imageSlim" style="max-width: 100%;"></a><br>
+公式的含义如下：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9780d61e2587f6d14ec364dea562c1e786cd1713ef5634d57b857c502168f084/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9780d61e2587f6d14ec364dea562c1e786cd1713ef5634d57b857c502168f084/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d" alt="image.png|625" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091513761.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><strong>传统方法的缺点</strong>​：你必须同时处理两个方程和两种不同类型的物理量（力和力矩、线加速度和角加速度），这使得公式推导和计算机编程都变得复杂和冗长。</p>
+<p>基于空间向量的解决方案：</p>
+<p>​==什么是空间向量？​==它是一个 ​<strong>6 维（6D）向量</strong>，巧妙地将描述刚体运动的线性（移动）和角度（旋转）分量“打包”结合在一起。</p>
+<p><strong>​空间加速度 (Spatial Acceleration)​</strong>​ = 线加速度 (<code class="notranslate">a</code>) + 角加速度 (<code class="notranslate">ω̇</code>)</p>
+<p><strong>​空间力 (Spatial Force)​</strong>​ = 力 (<code class="notranslate">f</code>) + 力矩 (<code class="notranslate">n</code>)</p>
+<p>... 同样还有空间速度、动量等。</p>
+<p>==统一的空间运动方程：==</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3e927fde28aa9b9100ea2295d2438e6b46a2f4f076dcd590770c7521bcf8b8f4/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/3e927fde28aa9b9100ea2295d2438e6b46a2f4f076dcd590770c7521bcf8b8f4/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828092057779.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>这个方程在形式上和 <code class="notranslate">f = m a</code> 非常相似，但它<strong>完整地描述了刚体的所有 6 个自由度的运动</strong>。我们来解析它的各个部分：</p>
+<p><strong><code class="notranslate">f</code>: ​空间力</strong> 。一个6D向量，包含了作用在刚体上的所有力和力矩信息。<br>
+<strong><code class="notranslate">I</code>: ​空间惯性张量</strong> 。一个6x6的矩阵，它同时包含了刚体的质量 (<code class="notranslate">m</code>)、质心位置和3D惯性张量 (<code class="notranslate">I</code>) 的所有信息。它完全定义了刚体本身的惯性属性。<br>
+​<code class="notranslate">a</code>: ​<strong>空间加速度</strong> 。一个6D向量，包含了质心的线加速度和刚体的角加速度。<br>
+​<code class="notranslate">v</code>: <strong>​空间速度</strong>。一个6D向量，包含了刚体的线速度和角速度。<br>
+​<code class="notranslate">v ×* I v</code>: 这是<strong>空间向量代数中的一种叉乘运算</strong>。它代表了<strong>离心力和哥氏力效应</strong>。在传统的3D方程里，这部分是 <code class="notranslate">ω × I ω</code>；在空间表示中，它被推广并包含了更全面的速度耦合效应。（<strong><code class="notranslate">×*</code></strong> 是一个符号，表示空间向量的叉乘）</p>
+<p><strong>空间向量表示法（Spatial Notation）​</strong>​ 在刚体动力学中的一个巨大优势：​<strong>它极大地简化了物理量的表达和运算</strong>。</p>
+<p>例如：合并两个刚体，​<strong>将两个刚体连接在一起，形成一个新的复合刚体</strong>。</p>
+<p>如果使用传统的 3 D 矢量方法，是非常复杂的。需要计算新质心位置，新的转动惯量等，这些代数运算非常大。</p>
+<p>在空间表示法中，每个刚体的惯性被整合为一个统一的数学对象——<strong>空间惯性张量（Spatial Inertia Tensor）​</strong>，它是一个 6x6 的矩阵，用 ​ <code class="notranslate">I</code> 表示。这个矩阵已经包含了质量、质心位置和转动惯量的所有信息。</p>
+<p>当两个刚体合并时，​<strong>新刚体的总空间惯性张量就是两者惯性张量之和</strong>​：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f1d0dd3b626ab925bb1486487c075f371217aca27074b2394bb1a5356e45e513/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f1d0dd3b626ab925bb1486487c075f371217aca27074b2394bb1a5356e45e513/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d" alt="image.png|235" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901093838379.png?imageSlim" style="max-width: 100%;"></a></p>
+<p>这个公式的简洁程度令人惊叹，它直接取代了传统方法中所有复杂的计算步骤。</p>
+<p><strong>空间向量不仅是一种数学工具，更是一种编程范式。它通过“数据类型抽象”和“专用函数库”，让程序员可以用非常简洁、直观的语法来表达复杂的物理运算，而无需牺牲任何运行效率。​</strong></p>
+<p>在传统的3D向量方法中，要实现一个完整的刚体动力学方程是非常复杂且难以调试。<br>
+使用空间向量方法非常简单清晰。<br>
+<strong>最终结果</strong>​：程序员可以用一行极其直观的代码：</p>
+<pre class="notranslate"><code class="notranslate">f = I * a + v.cross(I * v);
+</code></pre>
+<p><strong>总而言之，空间向量不仅是一种优雅的数学理论，更是一种强大的工程实践工具。它允许工程师和研究人员用表达力极强的代码来实现复杂的物理仿真，同时保证了专业级的运行性能，完美地平衡了开发效率与执行效率。​</strong></p>
+<h2>1.3 Units and Notation</h2>
+<ul>
+<li><strong>单位系统</strong>：书中的公式<strong>不依赖于任何特定单位制</strong>（如英制或公制），只要求在整个计算过程中使用的单位系统是<strong>自洽的 (consistent)</strong> 的。例如，不能混合使用米和英尺。</li>
+<li><strong>明确提及</strong>：在少数必须指明单位的地方，将采用<strong>国际单位制 (SI units)</strong>。</li>
+</ul>
+<p>数学符号与排版 (Mathematical Notation &amp; Typography)</p>
+<p>这是说明中最详细的部分，遵循了国际标准（ISO），旨在通过字体和字型来区分不同含义的符号：</p>
+<ul>
+<li>
+<p><strong>变量 (Variables)</strong>：使用_斜体_，如 ( $x, \theta, \lambda$ )。</p>
+</li>
+<li>
+<p><strong>常数 (Constants) 和 函数 (Functions)</strong>：使用<strong>罗马正体</strong>，如 ( $\pi, \sin, \exp$ )。</p>
+</li>
+<li>
+<p><strong>向量 (Vectors) 和 矩阵 (Matrices)</strong>：使用<strong>粗斜体</strong>。</p>
+</li>
+<li>
+<p><strong>向量</strong>：用<strong>小写</strong>粗斜体字母表示，如 ( $\boldsymbol{v}, \boldsymbol{f}$ )。</p>
+</li>
+<li>
+<p><strong>矩阵</strong>：用<strong>大写</strong>粗斜体字母表示，如 ( $\boldsymbol{M}, \boldsymbol{I}$ )。</p>
+</li>
+<li>
+<p><strong>特殊符号</strong>：</p>
+</li>
+<li>
+<p><strong>0</strong>：既表示<strong>零矩阵</strong>，也表示<strong>零向量</strong>。</p>
+</li>
+<li>
+<p><strong>1</strong>：表示<strong>单位矩阵 (identity matrix)</strong>。</p>
+</li>
+<li>
+<p><strong>⁻ᵀ</strong>：表示<strong>逆的转置</strong>，即 ( $\boldsymbol{A}{-T} = (\boldsymbol{A}{-1})^T$ )。</p>
+</li>
+</ul>
+<p>运算符与数组 (Operators &amp; Arrays)</p>
+<ul>
+<li>
+<strong>运算符 (Operators)</strong>：像 ( $\boldsymbol{a} \times$ ) 这样的表达式代表一个<strong>算子</strong>（或运算函数），其作用是将 ( $\boldsymbol{b}$ ) 映射为 ( $\boldsymbol{a} \times \boldsymbol{b}$ )（即叉乘）。</li>
+<li>
+<strong>数组 (Arrays)</strong>：指一个有编号的列表。数组 ( $\lambda$ ) 的第 ( i ) 个元素记为 ( $\lambda(i)$ )（注意是圆括号，而非下标）。</li>
+</ul>
+<p>坐标系与空间向量 (Coordinate Systems &amp; Spatial Vectors)</p>
+<p>这是理解本书动力学内容的关键约定：</p>
+<ul>
+<li>
+<p><strong>坐标系标识</strong>：通过<strong>前上标</strong>或<strong>下标</strong>来指明一个量是在哪个坐标系中表示或测量的。例如，( $^A\boldsymbol{v}$ ) 表示在坐标系 <code class="notranslate">{A}</code> 中测量的速度向量 ( $\boldsymbol{v}$ )。</p>
+</li>
+<li>
+<p><strong>空间向量标记</strong>：</p>
+</li>
+<li>
+<p><strong>空间向量本身</strong>（一个抽象的物理量）有时用<strong>帽子</strong>标记，如 ( $\hat{\boldsymbol{v}}$ )。</p>
+</li>
+<li>
+<p><strong>空间向量的坐标表示</strong>（一组数字）用<strong>下划线</strong>标记，如 ( $\underline{\boldsymbol{v}}$ )。</p>
+</li>
+<li>
+<p>（此部分在第二章有详细解释，是本书非常重要的一个概念区分）。</p>
+</li>
+</ul></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z', 'copy': 'M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z', 'check': 'M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const createClipboardHTML = (codeContent, additionalClasses = '') => `
+        <pre class="notranslate"><code class="notranslate">${codeContent}</code></pre>
+        <div class="clipboard-container position-absolute right-0 top-0 ${additionalClasses}">
+            <clipboard-copy class="ClipboardButton btn m-2 p-0" role="button" style="display: inherit;">
+                <svg height="16" width="16" class="octicon octicon-copy m-2"><path d="${IconList["copy"]}"></path></svg>
+                <svg height="16" width="16" class="octicon octicon-check color-fg-success m-2 d-none"><path d="${IconList["check"]}"></path></svg>
+            </clipboard-copy>
+            <div class="copy-feedback">Copied!</div>
+        </div>
+    `;
+
+    const handleCodeElements = (selector = '') => {
+        document.querySelectorAll(selector).forEach(codeElement => {
+            const codeContent = codeElement.innerHTML;
+            const newStructure = document.createElement('div');
+            newStructure.className = 'snippet-clipboard-content position-relative overflow-auto';
+            newStructure.innerHTML = createClipboardHTML(codeContent);
+
+            const parentElement = codeElement.parentElement;
+            if (selector.includes('highlight')) {
+                parentElement.insertBefore(newStructure, codeElement.nextSibling);
+                parentElement.removeChild(codeElement);
+            } else {
+                parentElement.parentElement.replaceChild(newStructure, parentElement);
+            }
+        });
+    };
+
+    handleCodeElements('pre.notranslate > code.notranslate');
+    handleCodeElements('div.highlight > pre.notranslate');
+
+    let currentFeedback = null;
+    document.querySelectorAll('clipboard-copy').forEach(copyButton => {
+        copyButton.addEventListener('click', () => {
+            const codeContent = copyButton.closest('.snippet-clipboard-content').innerText;
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = codeContent;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            const copyIcon = copyButton.querySelector('.octicon-copy');
+            const checkIcon = copyButton.querySelector('.octicon-check');
+            const copyFeedback = copyButton.nextElementSibling;
+
+            if (currentFeedback && currentFeedback !== copyFeedback) {currentFeedback.style.display = 'none';}
+            currentFeedback = copyFeedback;
+
+            copyIcon.classList.add('d-none');
+            checkIcon.classList.remove('d-none');
+            copyFeedback.style.display = 'block';
+            copyButton.style.borderColor = 'var(--color-success-fg)';
+
+            setTimeout(() => {
+                copyIcon.classList.remove('d-none');
+                checkIcon.classList.add('d-none');
+                copyFeedback.style.display = 'none';
+                copyButton.style.borderColor = '';
+            }, 2000);
+        });
+    });
+});
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>
