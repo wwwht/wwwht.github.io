@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekVercount.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901103739105.png?imageSlim)
+
+# 2. Spatial Vector Algebra
+
+空间向量是一种为了**研究刚体动力学**而发明的、更**高效**和**紧凑**的**数学表达“语言”​**。">
+<meta property="og:title" content="机器人动力学-2">
+<meta property="og:description" content="
+![image.png](https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901103739105.png?imageSlim)
+
+# 2. Spatial Vector Algebra
+
+空间向量是一种为了**研究刚体动力学**而发明的、更**高效**和**紧凑**的**数学表达“语言”​**。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/ji-qi-ren-dong-li-xue--2.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>机器人动力学-2</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+<style>#postBody{font-size:18px}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">机器人动力学-2</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/8" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9893cb5f08defd577b751a10d03b8ce06bc41583c62fd3d6edf2cf2c2c3807bd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9893cb5f08defd577b751a10d03b8ce06bc41583c62fd3d6edf2cf2c2c3807bd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901103739105.png?imageSlim" style="max-width: 100%;"></a></p>
+<h1>2. Spatial Vector Algebra</h1>
+<p>空间向量是一种为了<strong>研究刚体动力学</strong>而发明的、更<strong>高效</strong>和<strong>紧凑</strong>的<strong>数学表达“语言”​</strong>。</p>
+<p>它就像是用“成语”来代替“冗长的解释”，或者用“高级编程语言”来代替“繁琐的汇编指令”，目的是让表达、推导和计算都变得更简单。</p>
+<ol>
+<li>什么是空间向量</li>
+</ol>
+<blockquote>
+<p>“Spatial vectors are 6D vectors that combine the linear and angular aspects of rigid-body motions and forces.”</p>
+</blockquote>
+<p>6 维向量 (6 D vectors)​​：它不是我们熟悉的 3 D 空间中的向量，而是在一个抽象的 6 维空间中的向量。<br>
+​结合线性和角量 (combine linear and angular)​​：这是最关键的一点。一个空间向量同时包含了描述刚体运动或力所需的所有信息。<br>
+​运动向量​ = (线速度 v; 角速度 ω)<br>
+​力向量​ = (力 f; 力矩 τ)</p>
+<p><strong>目的</strong>​：用于描述<strong>刚体的运动和作用力</strong>。</p>
+<ol start="2">
+<li>为什么使用空间向量</li>
+</ol>
+<p><strong>紧凑的符号系统</strong>， <strong>简化的方程</strong>， <strong>易于转化为代码</strong>。</p>
+<ol start="3">
+<li>本章内容：</li>
+</ol>
+<p><strong>从基本原理出发 (from first principles)​</strong>​：不会直接扔给你结论，而是从基础概念一步步构建起整个空间向量代数体系。</p>
+<p><strong>直至单个刚体的运动方程 (up to the equation of motion)​</strong>​：本章的目标是最终推导出<strong>单个刚体</strong>的空间运动方程。这是理解更复杂系统（如机器人手臂）的基础。</p>
+<p><strong>平面向量代数 (planar vector algebra)​</strong>​：作为一个特例和简化，介绍如果刚体只在二维平面内运动（例如一个在桌面上移动的机器人），空间向量理论可以如何简化。这有助于理解和入门。</p>
+<p>​<strong>延伸阅读 (Appendix A &amp; Chapter 3)​</strong>​：<br>
+​<strong>附录A</strong>​：讲解如何在实际的计算机程序中<strong>实现</strong>空间向量的算术运算（即如何编写那个高效的“空间算术库”）。<br>
+​<strong>第三章</strong>​：本章只讲单个刚体，​<strong>第三章</strong>将展示如何用空间向量这个强大的工具去<strong>分析一般的、复杂的刚体系统</strong>​（如由多个连杆和关节构成的机器人）。</p>
+<h2>2.1 Mathematical Preliminaries</h2>
+<h3>Vectors and Vector Spaces</h3>
+<p>​<strong>​“向量”不仅仅是我们高中认识的 (x, y, z) 坐标点。​</strong>​ 在更高级的数学和物理中，向量被抽象为“向量空间”的元素。不同的向量空间有不同的规则和用途。本书主要使用四种空间，尤其是后两种为刚体动力学量身定做的空间。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>向量空间</th>
+<th>符号</th>
+<th>中文名</th>
+<th>本质与用途</th>
+<th>关键特性</th>
+<th>例子/类比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>​<strong>坐标向量空间</strong>​</td>
+<td>$R^n$</td>
+<td>​<strong>坐标向量</strong>​</td>
+<td>​<strong>纯数学的“数字列表”​</strong>。它是其他所有抽象向量的<strong>一种数值表示方法</strong>。</td>
+<td>是其他向量的“<strong>坐标</strong>”或“<strong>名字</strong>”。</td>
+<td>
+<code class="notranslate">[1.5, 2.0, 3.0]ᵀ</code>可以表示一个力，也可以表示一个点。</td>
+</tr>
+<tr>
+<td>​<strong>欧几里得向量空间</strong>​</td>
+<td>$E^n$</td>
+<td>​<strong>欧几里得向量</strong>​</td>
+<td>​<strong>经典物理学中的向量</strong>。拥有长度和方向的概念。</td>
+<td>定义了<strong>内积（点积）​</strong>，因此可以计算<strong>长度</strong>和<strong>夹角</strong>。</td>
+<td>描述刚体运动的<strong>3D力</strong>、<strong>3D速度</strong>。</td>
+</tr>
+<tr>
+<td>​<strong>空间运动向量空间</strong>​</td>
+<td>$M^6$</td>
+<td>​<strong>空间运动向量</strong>​</td>
+<td>​<strong>描述刚体运动的6D向量</strong>。将线性和角运动合二为一。</td>
+<td>​<strong>非欧几里得</strong>​（没有内积）。是本书为简化刚体动力学引入的<strong>核心工具之一</strong>。</td>
+<td>​<strong>空间速度</strong>​ v^=(线速度,角速度)</td>
+</tr>
+<tr>
+<td>​<strong>空间力向量空间</strong>​</td>
+<td>$F^6$</td>
+<td>​<strong>空间力向量</strong>​</td>
+<td>​<strong>描述刚体作用力的6D向量</strong>。将力和力矩合二为一。</td>
+<td>​<strong>非欧几里得</strong>。是本书为简化刚体动力学引入的另一个<strong>核心工具</strong>。</td>
+<td>​<strong>空间力</strong>​ f^​=(力,力矩)</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p>注意<strong>空间运动向量</strong>和<strong>空间力向量</strong>都是<strong>非欧几里得 (Not Euclidean)</strong> ​，这是最需要理解的一点！在空间向量空间里，​没有定义内积。<br>
+这意味着你不能直接计算一个空间向量的“长度”或两个空间向量之间的“夹角”。因为它的两个部分（线量和角量）​物理量纲不同​（例如，米/秒和弧度/秒），将它们强行相乘得到一个“长度”在物理上是没有意义的。<br>
+它们有自己的、更复杂的运算规则（如空间叉乘），这些规则完美地描述了刚体动力学。</p>
+<h3>Hats and Underlines</h3>
+<p>为了在特定情境下（尤其是本章引入新概念时）避免读者误解，作者引入了两个标记符号：<strong>​帽子 (hats: ˆ )​​ 和 ​下划线 (underlines: _ )​。</strong></p>
+<p>当<strong>空间向量（6D）​</strong>​ 和传统的<strong>3D向量</strong>在同一个上下文中出现，并且<strong>可能使用相同的变量名</strong>时。给<strong>空间向量</strong>戴上帽子。</p>
+<p>需要严格区分一个<strong>抽象的向量</strong>​（一个物理概念）和它的<strong>坐标表示</strong>​（一组数字）。给<strong>坐标向量</strong>加上下划线 <code class="notranslate">_</code>。</p>
+<h3>The Dual of a Vector Space</h3>
+<p><strong>向量空间的“对偶性”（Duality）</strong> 对偶空间理论描述的就是两个向量空间之间存在着这样一种完美的“配对”关系，这种关系通过一种称为标量积（Scalar Product）​​ 的运算来体现。</p>
+<p>对偶空间的定义：<strong>有一个向量空间 <code class="notranslate">V</code></strong> ：比如我们熟悉的三维空间中的所有力向量组成的空间。<strong>存在它的对偶空间 <code class="notranslate">V*</code></strong> ​， <code class="notranslate">V*</code> 也是一个向量空间，<code class="notranslate">V*</code> 的<strong>维度</strong>和 <code class="notranslate">V</code> ​<strong>完全相同</strong>，在 <code class="notranslate">V</code> 和 <code class="notranslate">V*</code> 之间定义了一个<strong>标量积</strong>运算：从 <code class="notranslate">V</code> 中取一个向量 <code class="notranslate">v</code>，从 <code class="notranslate">V*</code> 中取一个向量 <code class="notranslate">u</code>，它们可以进行“乘积”运算，结果是一个<strong>数字</strong>​（标量），记作 <code class="notranslate">u · v</code> 或 <code class="notranslate">v · u</code>。</p>
+<p>对称性：对偶关系是相互的。如果 <code class="notranslate">U = V*</code>，那么反过来 <code class="notranslate">V = U*</code>。它们是彼此的对偶。</p>
+<p><strong>在刚体动力学中的具体应用</strong>：这个抽象的概念<strong>直接适用于空间向量代数</strong>​：</p>
+<ul>
+<li>​空间运动向量空间 <code class="notranslate">M^6</code>：包含了所有描述刚体运动的6D向量（如空间速度 <code class="notranslate">v̂</code>，包含线速度和角速度）。</li>
+<li>空间力向量空间 <code class="notranslate">F^6</code>：包含了所有描述作用力的6D向量（如空间力 <code class="notranslate">f̂</code>，包含力和力矩）。</li>
+</ul>
+<p><em><em>它们互为对偶空间，即 $(M^6)</em> = F^6$且 <code class="notranslate">(F^6)* = M^6</code>。​</em>*</p>
+<p>它们之间的标量积具有明确的<strong>物理意义：功率（Power）​</strong>。</p>
+<p>如果 <code class="notranslate">m ∈ M^6</code> 是一个刚体的运动向量（速度），<code class="notranslate">f ∈ F^6</code> 是作用在该刚体上的力向量，那么它们的标量积 ​ <code class="notranslate">m · f</code> 计算结果就是一个标量，这个标量的物理意义就是<strong>该力做功的功率</strong>。</p>
+<p><strong>这就为这对抽象的数学伙伴赋予了极其深刻的物理内涵。​</strong>​ 功率是标量，正好符合标量积的输出结果。</p>
+<p>非退化（Nondegenerate）要求，为了保证这对“伙伴”的关系是完美且有用的，它们的“配对”方式（标量积）必须满足一个关键性质：​<strong>非退化</strong>。</p>
+<p><strong>定义</strong>​：一个标量积是<strong>非退化</strong>的，当且仅当：对于 <code class="notranslate">V</code> 中的<strong>任何一个非零</strong>向量 <code class="notranslate">v</code>（<code class="notranslate">v ≠ 0</code>），在 <code class="notranslate">V*</code> 中<strong>至少存在一个</strong>向量 <code class="notranslate">u</code>，使得它们的标量积 ​<code class="notranslate">v · u ≠ 0</code></p>
+<p>​<strong>为什么重要？​</strong>​ 这个性质确保了两个空间中的向量都能被有效地区分开来。它避免了这样一种糟糕的情况：存在一个非零的 <code class="notranslate">v</code>，但它和 <code class="notranslate">V*</code> 中所有的 <code class="notranslate">u</code> 相乘结果都是0（就像一个无法被任何钥匙打开的锁，或者一个无法购买任何商品的货币）。</p>
+<p>力 <code class="notranslate">F</code>在平动速度 <code class="notranslate">v_lin</code>上产生功率：<code class="notranslate">P_trans = F · v_lin</code></p>
+<p>力矩 <code class="notranslate">τ</code>在转动速度 <code class="notranslate">ω</code>上产生功率：<code class="notranslate">P_rot = τ · ω</code></p>
+<p><strong>总功率</strong>就是这两部分之和：<code class="notranslate">P_total = F · v_lin + τ · ω</code></p>
+<h3>Dual Base</h3>
+<p>对偶基：为了在一个对偶空间对 (<code class="notranslate">U</code> 和 <code class="notranslate">V</code>, 其中 <code class="notranslate">U = V*</code>) 中进行计算，我们需要为这两个空间各找一套<strong>基底（basis）​</strong>。而“对偶基”指的就是这两套基底之间存在着一种<strong>完美的、一一对应的“互反”关系</strong>。</p>
+<p>你可以想象成有两把<strong>相互匹配的标尺</strong>​：一把用来测量 <code class="notranslate">U</code> 空间中的向量。另一把用来测量 <code class="notranslate">V</code> 空间中的向量。而“对偶”意味着这两把标尺的刻度是<strong>精心设计、相互契合</strong>的。</p>
+<p>前提条件：两个对偶的空间，我们有两个向量空间 <code class="notranslate">U</code> 和 <code class="notranslate">V</code>，并且知道 <code class="notranslate">U</code> 是 <code class="notranslate">V</code> 的对偶空间，即 <code class="notranslate">U = V*</code>（这意味着 <code class="notranslate">V</code> 也是 <code class="notranslate">U</code> 的对偶空间 <code class="notranslate">V = U*</code>）。在我们的应用中，<code class="notranslate">U</code> 和 <code class="notranslate">V</code> 通常就是 <code class="notranslate">F^6</code>（空间力）和 <code class="notranslate">M^6</code>（空间运动）。</p>
+<p>互反条件 (The Reciprocity Condition)：这是理解对偶基的<strong>最关键一步</strong>。<br>
+我们在 <code class="notranslate">U</code> 空间中任意选取一套基底（basis），记为 $D={d_1​,d_2​,...,d_n​}$ 。<br>
+我们在 <code class="notranslate">V</code> 空间中任意选取一套基底，记为 $E={e_1​,e_2​,...,e_n​}$ 。<br>
+如果这两套基底满足以下条件：</p>
+<p>$$
+\boldsymbol{d}_i \cdot \boldsymbol{e}_j =
+\begin{cases}
+1 &amp; \text{if } i = j \\
+0 &amp; \text{if } i \neq j
+\end{cases}
+$$</p>
+<p>那么，我们就称基底 D和 E是<strong>对偶基</strong>。<br>
+<strong>唯一确定</strong>​：如果其中一套基底（例如 E）已经固定，那么满足上述互反条件的另一套基底（D）​<strong>是唯一确定的</strong>。也就是说，给你 <code class="notranslate">V</code> 空间的一套基，你只能找到<strong>唯一一套</strong>​ <code class="notranslate">U</code> 空间的基与之构成对偶基。</p>
+<p><strong>记号</strong>​：我们可以把由 E唯一确定的对偶基 D记为 E∗。同样，D确定的对偶基就是 D∗。<br>
+正交归一基：当 <code class="notranslate">U</code>和 <code class="notranslate">V</code>是<strong>同一个普通的欧几里得空间</strong>​（<code class="notranslate">U = V = E^n</code>）时，情况变得特殊。- 什么样的基底自己和自己点乘满足 <code class="notranslate">d_i · d_j = 1 (if i=j)</code>且 <code class="notranslate">d_i · d_j = 0 (if i≠j)</code>呢？答案就是：​<strong>正交归一基（Orthonormal Basis）​</strong>​！</p>
+<p><strong>结论</strong>​：因此，​<strong>正交归一基是对偶基的一个特例</strong>，它发生在“空间自对偶”（<code class="notranslate">U = V</code>）且“基相同”（<code class="notranslate">D = E</code>）的情况下。</p>
+<h3>Dual Coordinates</h3>
+<p>对偶坐标（特别是<strong>普吕克坐标 Plücker coordinates</strong>）是一种特殊的“编码规则”，它有两个巨大优势：</p>
+<ol>
+<li><strong>它让抽象的空间向量点积运算，变为了简单的矩阵乘法。​</strong>​</li>
+<li><strong>它让复杂的坐标变换规则，变得清晰且易于处理。​</strong></li>
+</ol>
+<p>对偶坐标的黄金法则 (The Golden Rule)</p>
+<p>$$
+\boldsymbol{u} \cdot \boldsymbol{v} = \underline{\boldsymbol{u}}^{\mathrm{T}} \underline{\boldsymbol{v}}
+$$</p>
+<p>左边 $\boldsymbol{u} \cdot \boldsymbol{v}$ ​：这是两个<strong>抽象的空间向量</strong>​（例如，一个空间力 <code class="notranslate">u</code> 和一个空间运动 <code class="notranslate">v</code>）之间的标量积。它的物理意义是功率<br>
+右边 $\underline{\boldsymbol{u}}^{\mathrm{T}} \underline{\boldsymbol{v}}$ ：其中 <code class="notranslate">u</code> 和 <code class="notranslate">v</code> 是<strong>坐标向量</strong>。它们是一组数字，分别代表抽象向量 <code class="notranslate">u</code> 和 <code class="notranslate">v</code> 在某个<strong>对偶坐标系</strong>下的值。<code class="notranslate">uᵀ v</code> 的操作就是标准的<strong>矩阵转置和乘法</strong>。对于一个列向量，<code class="notranslate">uᵀ v</code> 就是两个向量的<strong>点积</strong>。</p>
+<p>这意味着，只要你选用了对偶坐标（比如Plücker坐标），计算两个空间向量的标量积（功率）就变得<strong>极其简单</strong>——你不需要知道它们具体的物理含义，只需要把代表它们的两个坐标数组拿来做一次矩阵乘法即可。这为编写高效的计算代码提供了极大的便利。</p>
+<p>坐标分量：<strong>坐标分量就是将抽象物理向量在一组特定基底上进行投影测量后得到的数值结果</strong>。<br>
+关于坐标 $u_i$ 和 $v_i$ ​定义的公式：</p>
+<p>$$
+
+u_{i} = \boldsymbol{e}_{i} \cdot \boldsymbol{u} \qquad \text{and} \qquad v_{i} = \boldsymbol{d}_{i} \cdot \boldsymbol{v}
+
+$$</p>
+<p>• $u_i$ ：是抽象向量 u 在 V 空间的基向量 e_i 上的“投影”（通过标量积测量）。<br>
+• $v_i$ ​：是抽象向量 v 在 U 空间的基向量 d_i 上的“投影”。</p>
+<p>这为坐标向量中的每一个数字赋予了清晰的<strong>物理或几何意义</strong>。它告诉你，在选定了对偶基 <code class="notranslate">D</code> 和 <code class="notranslate">E</code> 之后，向量 <code class="notranslate">u</code> 的第 <code class="notranslate">i</code> 个坐标值，就等于 <code class="notranslate">u</code> 与 <code class="notranslate">E</code> 的第 <code class="notranslate">i</code> 个基向量 <code class="notranslate">e_i</code> 做点积的结果。</p>
+<p><strong>坐标变换的优美结论</strong></p>
+<p>当我们需要从一个坐标系变换到另一个坐标系时，对偶坐标展现了其另一个优美之处。</p>
+<p>​<strong>问题</strong>​：如果我们想对坐标向量 $\underline{\boldsymbol{u}}$ 和 $\underline{\boldsymbol{v}}$ 进行坐标变换，我们需要两个变换矩阵：分别给 $\underline{\boldsymbol{u}}$ 和 $\underline{\boldsymbol{v}}$  使用。<br>
+<strong>结论</strong>​：如果 <code class="notranslate">X</code> 是作用于 <code class="notranslate">u</code> 的变换矩阵（即新坐标 <code class="notranslate">u' = X * u</code>），那么作用于 <code class="notranslate">v</code> 的变换矩阵 <code class="notranslate">X*</code> 不是任意的，它必须满足：</p>
+<p>$$
+X^* = X^{-T}
+$$</p>
+<p>这里  $X^{-T}$ 是 $X$ 的<strong>逆矩阵的转置</strong> ​ $(X⁻¹)ᵀ$ 。</p>
+<p>下面举例说明：</p>
+<p>首先要清楚 $X$ 是什么，它是作用于空间向量的（如运动空间 <code class="notranslate">M^6</code>）的变换矩阵，那么作用于其对偶空间（如力空间 <code class="notranslate">F^6</code>）的变换矩阵就是 $X^* = X^{-T}$ ，这个规则保证了标量积（功率）在任何坐标系下计算结果都一致。</p>
+<p><strong>X</strong>​ 是一个 ​<strong>6x6 的矩阵</strong>，它定义了如何将一个<strong>运动向量</strong>​（或<strong>力向量</strong>）从一个坐标系 ​<strong>​{A}​</strong>​ 的坐标表示，变换到另一个坐标系 ​<strong>​{B}​</strong>​ 的坐标表示。</p>
+<p>​<strong>它的本质是一个适用于力向量和运动向量的“坐标系转换器”​</strong>。对比可以参考位姿的 4 x 4 变换矩阵.<br>
+<strong>变换矩阵 X 完全且唯一地由两个坐标系之间的相对位置和相对姿态（合称为“位姿”) 决定。​</strong>​ 它封装了两个坐标系之间的所有几何关系，不依赖于任何特定的力或运动。</p>
+<p>运动向量变换矩阵 X 的通用形式:</p>
+<p>$$
+
+^A\mathbf{X}_B = \begin{bmatrix}
+
+^A\mathbf{R}_B &amp;amp; \mathbf{0}_{3 \times 3} \\
+
+^A\mathbf{o}_B \times {}^A\mathbf{R}_B &amp;amp; ^A\mathbf{R}_B
+
+\end{bmatrix}
+
+$$</p>
+<p>$^A\mathbf{X}_B$ : 表示坐标系 {B}到 {A}的运动向量变换矩阵。<br>
+$^A\mathbf{R}_B$ : 表示坐标系 {B}相对于 {A}的 <strong>​3x3 旋转矩阵</strong>。​<strong>这描述了二者的相对姿态（旋转关系）​</strong>。<br>
+$^A\mathbf{o}_B$ : 表示坐标系 {B}的原点在 {A}系中的坐标位置（一个 ​3x1 向量）。<strong>这描述了二者的相对位置（平移关系）​</strong>。<br>
+$\times$ 在这里表示叉乘运算符。 ${^A\mathbf{o}_B \times}$ 意味着由向量 ${^A\mathbf{o}<em>B}$ 构成的叉乘矩阵。<br>
+$\mathbf{0}</em>{3 \times 3}$ : 表示一个 ​3x3 的零矩阵。</p>
+<p>例如我们有一个场景：</p>
+<p><strong>运动向量</strong>: 一个机器人的末端执行器有一个空间速度 <code class="notranslate">v̂</code>（包含线速度和角速度）。<br>
+<strong>力向量</strong>: 在末端执行器上作用有一个空间力 <code class="notranslate">f̂</code>（包含力和力矩）。<br>
+它们在两个坐标系下的关系为：</p>
+<p>$v_a = X * v_b$   运动向量从 {B} 系变换到 {A} 系<br>
+$f_a = X^* * f_b$ 力向量从 {B} 系变换到 {A} 系。我们现在不知道 <code class="notranslate">X*</code> 应该是什么</p>
+<p><strong>黄金法则：功率必须守恒</strong></p>
+<p>功率是一个物理标量，​<strong>不应该随着我们描述它的坐标系改变而改变</strong>。因此，无论在哪个坐标系下计算，功率必须相等：</p>
+<p>$$f_a \cdot v_a = f_b \cdot v_b$$</p>
+<p>写成矢量形式：</p>
+<p>$$
+f_a^T v_a = f_b^T v_b
+$$</p>
+<p>代入变换矩阵：</p>
+<p>$$
+(X^* f_b)^T (X v_b) = f_b^T v_b
+$$</p>
+<p>根据矩阵转置法则：</p>
+<p>$$
+f_b^T (X^*)^T X v_b = f_b^T v_b
+$$</p>
+<p>要使这个等式对<strong>所有</strong>的 $f_b$ 和 $v_b$ 都成立，必须满足：</p>
+<p>$$
+(X^*)^T X = I
+$$</p>
+<p>这里 <code class="notranslate">I</code> 是单位矩阵。这意味着 <code class="notranslate">(X*)ᵀ</code> 必须是 <code class="notranslate">X</code> 的逆矩阵：</p>
+<p>$$
+(X^*)^T = X^{-1}
+$$</p>
+<p>两边同时取转置，就得到了那个优美的结论：</p>
+<p>$$
+X^* = (X^{-1})^T = X^{-T}
+$$</p>
+<h3>Operators a· and a×:</h3>
+<p>通常，我们把 <code class="notranslate">a · b</code> 和 <code class="notranslate">a × b</code> 看作是两个向量之间的<strong>运算</strong>，其结果是另一个标量或向量。换一个角度，<strong>将 <code class="notranslate">a ·</code> 和 <code class="notranslate">a ×</code> 本身视为独立的数学对象——运算符（Operator）​</strong>。</p>
+<ul>
+<li><strong>运算符</strong>​：是一种<strong>函数</strong>或<strong>映射</strong>。它接受一个输入（称为<strong>操作数 Operand</strong>），然后产生一个输出。</li>
+<li><strong>操作数</strong>​：就是被运算符作用的那个对象。</li>
+</ul>
+<p>​<strong>当 a 是一个坐标向量时</strong>​（即一组数字，而不是一个抽象的物理向量），点乘运算符 <code class="notranslate">a ·</code>在矩阵运算下的表现形式就是 ​<strong>a 的转置 <code class="notranslate">aᵀ</code></strong>。</p>
+<p><strong>叉乘运算符 <code class="notranslate">a ×</code> 可以表示成一个方阵</strong>​（通常是 3x3 或 6x6）。</p>
+<p>$$
+a \times b = [a \times] b = \begin{bmatrix}
+0 &amp; -a_z &amp; a_y \\
+a_z &amp; 0 &amp; -a_x \\
+-a_y &amp; a_x &amp; 0
+\end{bmatrix} \begin{bmatrix}
+b_x \\
+b_y \\
+b_z
+\end{bmatrix}
+$$</p>
+<p>文中还提到了 <code class="notranslate">a ×*</code>，它是 <code class="notranslate">a ×</code> 的<strong>对偶算子（Dual Operator）</strong>。这涉及到对偶空间的概念。简单来说，如果 <code class="notranslate">a ×</code> 作用于运动空间（如速度），那么它的对偶算子 <code class="notranslate">a ×*</code> 就作用于力空间。</p>
+<h3>Dyads and Dyadics</h3>
+<p><strong>并矢（Dyads）​</strong>和<strong>并矢张量（Dyadics）​</strong>​ 的概念</p>
+<p>并矢和并矢张量是构建<strong>线性算子</strong>​（一种输入是向量，输出也是向量的函数）的“积木”或基本单元。它们提供了一种非常直观的方式来理解和构造复杂的线性映射。</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>
