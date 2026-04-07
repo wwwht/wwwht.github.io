@@ -83,7 +83,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9893cb5f08defd577b751a10d03b8ce06bc41583c62fd3d6edf2cf2c2c3807bd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9893cb5f08defd577b751a10d03b8ce06bc41583c62fd3d6edf2cf2c2c3807bd/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901103739105.png?imageSlim" style="max-width: 100%;"></a></p>
+<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/a13446e9271ce426ad10ffc3a63f7098145c8844fa0832d2bed5256eebf2afd3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/a13446e9271ce426ad10ffc3a63f7098145c8844fa0832d2bed5256eebf2afd3/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313130333733393130352e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901103739105.png?imageSlim" style="max-width: 100%;"></a></p>
 <h1>2. Spatial Vector Algebra</h1>
 <p>空间向量是一种为了<strong>研究刚体动力学</strong>而发明的、更<strong>高效</strong>和<strong>紧凑</strong>的<strong>数学表达“语言”​</strong>。</p>
 <p>它就像是用“成语”来代替“冗长的解释”，或者用“高级编程语言”来代替“繁琐的汇编指令”，目的是让表达、推导和计算都变得更简单。</p>
@@ -335,7 +335,7 @@ if("11/28/2024"!=""){
     var startSite=new Date("11/28/2024");
     var diff=now.getTime()-startSite.getTime();
     var diffDay=Math.floor(diff/(1000*60*60*24));
-    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
 }
 </script></div>
 </body>
@@ -380,6 +380,7 @@ document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
 function openComments(){
     cm=document.getElementById("comments");
     cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
     cmButton.innerHTML="loading";
     span=document.createElement("span");
     span.setAttribute("class","AnimatedEllipsis");

@@ -155,7 +155,7 @@ $$</p>
 <p>在求解 IK 问题之前，检查目标是否在可达空间内非常重要。如果目标不可达，那么继续尝试寻找解是浪费计算资源的。因此，预先判断目标的可达性可以显著减少处理时间，提升系统效率。</p>
 <p>在不考虑关节约束和目标方向的情况下，可以应用<strong>简单</strong>的可达性检查:<br>
 先计算目标点与基座的距离 $d$ 。目标点的距离大于所有关节连杆长度的总和（即整个运动链的最大伸展长度），此时目标超出最大范围，无法到达; 目标点的距离小于一个特定下限值（即某些关节重叠或卷曲时的最小收缩长度），此时目标位于一个过小的范围内，也无法到达.</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/d2b2cf993f6b701cf33f4227f78c9f36416b13bbf42d1fea7c689348398cd229/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/d2b2cf993f6b701cf33f4227f78c9f36416b13bbf42d1fea7c689348398cd229/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250120152839140.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/847e4b17cd17576c7e70cad429cb58121f4646cd62d8129e3e59227b6f8e45ec/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/847e4b17cd17576c7e70cad429cb58121f4646cd62d8129e3e59227b6f8e45ec/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132303135323833393134302e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250120152839140.png?imageSlim" style="max-width: 100%;"></a></p>
 <h1>2. 解析解（Analytic Solutions）</h1>
 <p>先简单概述一下优缺点：<br>
 优点：速度快（us级），精度高，能得到所有解；<br>
@@ -210,7 +210,7 @@ $\dot{\theta}$ 关节角度的变化速率（时间导数）。</li>
 <li><strong>关节调整：</strong> 根据 Jacobian 计算出需要调整的关节角度增量，使误差逐步减少。</li>
 <li><strong>重复迭代：</strong> 不断调整关节角度，直到误差足够小，末端执行器到达目标位置和方向。</li>
 </ul>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/e285fbd9ceebdbc6f62b17124af5a3e3366ab375ac69fe8c6ea9f3ea79cd4f42/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/e285fbd9ceebdbc6f62b17124af5a3e3366ab375ac69fe8c6ea9f3ea79cd4f42/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122143645714.png?imageSlim" style="max-width: 100%;"></a><br>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/eb4dea9973baa44cc811efb07ed713a180bdeeec845f8c4a4d23a9e516724488/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/eb4dea9973baa44cc811efb07ed713a180bdeeec845f8c4a4d23a9e516724488/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323134333634353731342e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122143645714.png?imageSlim" style="max-width: 100%;"></a><br>
 <strong>k</strong>：末端执行器（end effectors）的数量。<br>
 <strong>n</strong>：机械臂的关节（joints）的数量。<br>
 因此，Jacobian 矩阵 $J$ 的理论维度是 <strong>k×n</strong> .<br>
@@ -249,7 +249,7 @@ $$</p>
 <p>其中 $e$ 是目标位置和当前实际位置的误差向量。通过计算 Δθ，调整关节角度 θ，使末端执行器的位置和姿态更接近目标。</p>
 <p><strong>Jacobian 的潜在问题:</strong><br>
 矩阵非方针, 不可逆-&gt;</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6c414936f91db68245544989c296c50781031c0357628a824e77ea22bacd1949/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/6c414936f91db68245544989c296c50781031c0357628a824e77ea22bacd1949/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150302332.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/94dddabe65e5af73cd36c27f61b6c895a891d6ad57b6f705e8566ac4292c8c51/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/94dddabe65e5af73cd36c27f61b6c895a891d6ad57b6f705e8566ac4292c8c51/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303330323333322e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150302332.png?imageSlim" style="max-width: 100%;"></a></p>
 <p><strong>Jacobian 的一阶近似</strong>:</p>
 <ul>
 <li><strong>独立性假设：</strong>
@@ -264,7 +264,7 @@ $$</p>
 </ul>
 </li>
 </ul>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/743940435a2c1f33dd477ac46262cebce57cc86b3c4f3ddefb5c8c4eb807ce19/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/743940435a2c1f33dd477ac46262cebce57cc86b3c4f3ddefb5c8c4eb807ce19/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150654806.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9b3ca9fabb695eea2c4d11fb89cddcfff03b8300818d7b71b58959fc2b7a2ada/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9b3ca9fabb695eea2c4d11fb89cddcfff03b8300818d7b71b58959fc2b7a2ada/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303132323135303635343830362e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250122150654806.png?imageSlim" style="max-width: 100%;"></a></p>
 <h3>3.1.1 Jacobian transpose</h3>
 <p>未完</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
@@ -286,7 +286,7 @@ if("11/28/2024"!=""){
     var startSite=new Date("11/28/2024");
     var diff=now.getTime()-startSite.getTime();
     var diffDay=Math.floor(diff/(1000*60*60*24));
-    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
 }
 </script></div>
 </body>
@@ -331,6 +331,7 @@ document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
 function openComments(){
     cm=document.getElementById("comments");
     cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
     cmButton.innerHTML="loading";
     span=document.createElement("span");
     span.setAttribute("class","AnimatedEllipsis");

@@ -97,7 +97,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f3b9ffed322e6896c8549b1b38b42dca28feca50ac67872cafd1d0e214b3c807/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f3b9ffed322e6896c8549b1b38b42dca28feca50ac67872cafd1d0e214b3c807/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d" alt="image.png|450" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250826110011251.png?imageSlim" style="max-width: 100%;"></a><br>
+<div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/381cd7a766e5ca0d8f5f5f65b6877d8ab7301a402127e3226354293e280aa6f1/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/381cd7a766e5ca0d8f5f5f65b6877d8ab7301a402127e3226354293e280aa6f1/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832363131303031313235312e706e673f696d616765536c696d" alt="image.png|450" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250826110011251.png?imageSlim" style="max-width: 100%;"></a><br>
 好久没有更新了，今天开个新坑，机器人动力学</p>
 <h1>1. Introduction</h1>
 <h2>1.1 Dynamics Algorithms</h2>
@@ -160,9 +160,9 @@ $$</p>
 <p><strong>空间向量 (Spatial Vectors)​</strong>。它的目的是<strong>简化描述和计算</strong></p>
 <p><strong>一个刚体在三维空间中有 6 个运动自由度</strong>​：这很好理解，它可以同时在 3 个方向上<strong>移动</strong>​（前后、左右、上下）和绕 3 个轴<strong>旋转</strong>​（俯仰、偏航、翻滚）。</p>
 <p><strong>但我们通常用 3D 向量来表达它的动力学</strong>​：这意味着我们需要<strong>两个独立的方程</strong>来描述一个刚体的完整运动：</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/2c3b1ba9427a44732e601f994b5d29b5ac3de8b18f60c5b255cf540bc3be556e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/2c3b1ba9427a44732e601f994b5d29b5ac3de8b18f60c5b255cf540bc3be556e/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091207171.png?imageSlim" style="max-width: 100%;"></a><br>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/0e941242bf55c8221f9bb6eddff66adb6a21f43318c211e2d966d71d0d823274/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/0e941242bf55c8221f9bb6eddff66adb6a21f43318c211e2d966d71d0d823274/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313230373137312e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091207171.png?imageSlim" style="max-width: 100%;"></a><br>
 公式的含义如下：</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/9780d61e2587f6d14ec364dea562c1e786cd1713ef5634d57b857c502168f084/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/9780d61e2587f6d14ec364dea562c1e786cd1713ef5634d57b857c502168f084/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d" alt="image.png|625" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091513761.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/6f251c3dbf0af0e79f79c8cee3b1ec5682883f7cc74fd834456b64048c2a5f52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/6f251c3dbf0af0e79f79c8cee3b1ec5682883f7cc74fd834456b64048c2a5f52/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039313531333736312e706e673f696d616765536c696d" alt="image.png|625" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828091513761.png?imageSlim" style="max-width: 100%;"></a></p>
 <p><strong>传统方法的缺点</strong>​：你必须同时处理两个方程和两种不同类型的物理量（力和力矩、线加速度和角加速度），这使得公式推导和计算机编程都变得复杂和冗长。</p>
 <p>基于空间向量的解决方案：</p>
 <p>​==什么是空间向量？​==它是一个 ​<strong>6 维（6D）向量</strong>，巧妙地将描述刚体运动的线性（移动）和角度（旋转）分量“打包”结合在一起。</p>
@@ -170,7 +170,7 @@ $$</p>
 <p><strong>​空间力 (Spatial Force)​</strong>​ = 力 (<code class="notranslate">f</code>) + 力矩 (<code class="notranslate">n</code>)</p>
 <p>... 同样还有空间速度、动量等。</p>
 <p>==统一的空间运动方程：==</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3e927fde28aa9b9100ea2295d2438e6b46a2f4f076dcd590770c7521bcf8b8f4/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/3e927fde28aa9b9100ea2295d2438e6b46a2f4f076dcd590770c7521bcf8b8f4/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828092057779.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5313638283116168309e3c2f52d47f0def3a0ebd509bfb75ac97f5e56ccc0743/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/5313638283116168309e3c2f52d47f0def3a0ebd509bfb75ac97f5e56ccc0743/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303832383039323035373737392e706e673f696d616765536c696d" alt="image.png" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250828092057779.png?imageSlim" style="max-width: 100%;"></a></p>
 <p>这个方程在形式上和 <code class="notranslate">f = m a</code> 非常相似，但它<strong>完整地描述了刚体的所有 6 个自由度的运动</strong>。我们来解析它的各个部分：</p>
 <p><strong><code class="notranslate">f</code>: ​空间力</strong> 。一个6D向量，包含了作用在刚体上的所有力和力矩信息。<br>
 <strong><code class="notranslate">I</code>: ​空间惯性张量</strong> 。一个6x6的矩阵，它同时包含了刚体的质量 (<code class="notranslate">m</code>)、质心位置和3D惯性张量 (<code class="notranslate">I</code>) 的所有信息。它完全定义了刚体本身的惯性属性。<br>
@@ -182,7 +182,7 @@ $$</p>
 <p>如果使用传统的 3 D 矢量方法，是非常复杂的。需要计算新质心位置，新的转动惯量等，这些代数运算非常大。</p>
 <p>在空间表示法中，每个刚体的惯性被整合为一个统一的数学对象——<strong>空间惯性张量（Spatial Inertia Tensor）​</strong>，它是一个 6x6 的矩阵，用 ​ <code class="notranslate">I</code> 表示。这个矩阵已经包含了质量、质心位置和转动惯量的所有信息。</p>
 <p>当两个刚体合并时，​<strong>新刚体的总空间惯性张量就是两者惯性张量之和</strong>​：</p>
-<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/f1d0dd3b626ab925bb1486487c075f371217aca27074b2394bb1a5356e45e513/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/f1d0dd3b626ab925bb1486487c075f371217aca27074b2394bb1a5356e45e513/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d" alt="image.png|235" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901093838379.png?imageSlim" style="max-width: 100%;"></a></p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/5011cbdd74dd7cf6e3eaf97ac3b12bdfcfe3e7ae178219f145c25ce48509ef2b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d"><img src="https://camo.githubusercontent.com/5011cbdd74dd7cf6e3eaf97ac3b12bdfcfe3e7ae178219f145c25ce48509ef2b/68747470733a2f2f7777776874626c6f672d313330393030383837312e636f732e61702d6265696a696e672e6d7971636c6f75642e636f6d2f626c6f672f32303235303930313039333833383337392e706e673f696d616765536c696d" alt="image.png|235" data-canonical-src="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/20250901093838379.png?imageSlim" style="max-width: 100%;"></a></p>
 <p>这个公式的简洁程度令人惊叹，它直接取代了传统方法中所有复杂的计算步骤。</p>
 <p><strong>空间向量不仅是一种数学工具，更是一种编程范式。它通过“数据类型抽象”和“专用函数库”，让程序员可以用非常简洁、直观的语法来表达复杂的物理运算，而无需牺牲任何运行效率。​</strong></p>
 <p>在传统的3D向量方法中，要实现一个完整的刚体动力学方程是非常复杂且难以调试。<br>
@@ -272,7 +272,7 @@ if("11/28/2024"!=""){
     var startSite=new Date("11/28/2024");
     var diff=now.getTime()-startSite.getTime();
     var diffDay=Math.floor(diff/(1000*60*60*24));
-    document.getElementById("runday").innerHTML="网站运行"+diffDay+"天"+" • ";
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
 }
 </script></div>
 </body>
@@ -317,6 +317,7 @@ document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
 function openComments(){
     cm=document.getElementById("comments");
     cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
     cmButton.innerHTML="loading";
     span=document.createElement("span");
     span.setAttribute("class","AnimatedEllipsis");
