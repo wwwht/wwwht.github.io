@@ -206,12 +206,10 @@ $），所以有</p>
 <p>将式 (4) 和式 (5) 按照 $ \mathbf{v}_c = [v_x, v_y, v_z, \omega_x, \omega_y, \omega_z]^\top $ 的顺序整理成矩阵形式：</p>
 <p>$ \begin{bmatrix} \dot{x} \ \dot{y} \end{bmatrix} = \mathbf{L}_x \begin{bmatrix} v_x \ v_y \ v_z \ \omega_x \ \omega_y \ \omega_z \end{bmatrix} $</p>
 <p>其中，交互矩阵 $ \mathbf{L}_x $ 为：</p>
-<p>$ \boxed{<br>
-\mathbf{L}_x = \begin{bmatrix}<br>
+<p>$ \mathbf{L}_x = \begin{bmatrix}<br>
 -\frac{1}{Z} &amp; 0 &amp; \frac{x}{Z} &amp; xy &amp; -(1+x^2) &amp; y \<br>
 0 &amp; -\frac{1}{Z} &amp; \frac{y}{Z} &amp; 1+y^2 &amp; -xy &amp; -x<br>
-\end{bmatrix}<br>
-} \tag{6} $</p>
+\end{bmatrix} \tag{6} $</p>
 <p>这就是<strong>单个点特征（归一化坐标）的交互矩阵</strong>。</p>
 <h2>6. 交互矩阵的物理意义</h2>
 <p>$ \mathbf{L}_x $ 的每一列对应于相机速度的一个分量对图像特征速度的贡献。</p>
@@ -277,7 +275,14 @@ $），所以有</p>
 </ul>
 <h2>7. 扩展到多个点</h2>
 <p>对于 $ n $ 个点，将每个点的交互矩阵堆叠起来，形成总交互矩阵：</p>
-<p>$\mathbf{L} = \begin{bmatrix} \mathbf{L}<em>{x_1} \ \mathbf{L}</em>{x_2} \ \vdots \ \mathbf{L}_{x_n} \end{bmatrix} $</p>
+<p>$<br>
+\mathbf{L} = \begin{bmatrix}<br>
+\mathbf{L}<em>{x_1} \<br>
+\mathbf{L}</em>{x_2} \<br>
+\vdots \<br>
+\mathbf{L}_{x_n}<br>
+\end{bmatrix}<br>
+$</p>
 <p>此时，图像特征向量为所有点的坐标拼接而成：</p>
 <p>$ \mathbf{s} = [x_1, y_1, x_2, y_2, \dots, x_n, y_n]^\top $</p>
 <p>特征变化率为：</p>
