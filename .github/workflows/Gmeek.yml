@@ -46,6 +46,11 @@ jobs:
           pip install --upgrade pip
           pip install -r /opt/Gmeek/requirements.txt
 
+      - name: Format issue first
+        if: github.event_name == 'issues'
+        run: |
+          python auto_format.py ${{ secrets.GITHUB_TOKEN }} ${{ github.repository }} --issue_number '${{ github.event.issue.number }}'
+
       - name: Generate new html
         run: |
           cp -r ./* /opt/Gmeek/
