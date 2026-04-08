@@ -13,7 +13,7 @@ def should_promote_to_block_math(content: str) -> bool:
 
 
 def promote_formula_blocks(text: str) -> str:
-    def replace(match: re.Match[str]) -> str:
+    def replace(match: re.Match) -> str:
         content = match.group(1).strip()
         if not should_promote_to_block_math(content):
             return match.group(0)
@@ -49,7 +49,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     github_module = importlib.import_module("github")
-    github_client = github_module.Github(args.token)
+    github_auth = github_module.Auth.Token(args.token)
+    github_client = github_module.Github(auth=github_auth)
     issue = github_client.get_repo(args.repository).get_issue(args.issue_number)
     original_body = issue.body or ""
     formatted_body = format_issue_body(original_body)
