@@ -10,9 +10,9 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。">
+<meta name="description" content="11111所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。">
 <meta property="og:title" content="test">
-<meta property="og:description" content="所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。">
+<meta property="og:description" content="11111所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://wwwht.github.io/post/test.html">
 <meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
@@ -73,7 +73,7 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
 </div>
     <div id="content">
-<div class="markdown-body" id="postBody"><p>所以，<strong>IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息</strong>；至少要知道或近似知道深度和内参。</p>
+<div class="markdown-body" id="postBody"><p>11111所以，<strong>IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息</strong>；至少要知道或近似知道深度和内参。</p>
 <h1>单个点特征的交互矩阵（图像雅可比矩阵）推导</h1>
 <h2>1. 问题描述</h2>
 <p>考虑相机观察一个静态的三维点。设该点在相机坐标系下的坐标为：</p>
@@ -90,7 +90,9 @@ y \end{bmatrix} = \begin{bmatrix} \frac{X}{Z} \\
 $$</p>
 <p>其中，$ Z &gt; 0 $ 是点的深度。</p>
 <p>在视觉伺服中，我们通常选取图像点的坐标作为视觉特征，即：</p>
-<p>$ \mathbf{s} = \mathbf{x} = \begin{bmatrix} x \ y \end{bmatrix} $</p>
+<p>$$
+\mathbf{s} = \mathbf{x} = \begin{bmatrix} x \ y \end{bmatrix}
+$$</p>
 <p>$$
 \mathbf{s} = \mathbf{x} = \begin{bmatrix} x \\
 y \end{bmatrix}
@@ -107,11 +109,13 @@ $$</p>
 <p>对于一个相对于相机以角速度 $ \boldsymbol{\omega} = [\omega_x, \omega_y, \omega_z]^\top $ 和平移速度 $ \mathbf{v} = [v_x, v_y, v_z]^\top $ 运动的点（注意：由于点是静止的，相机运动导致点在相机坐标系中的运动速度正好相反），其在相机坐标系中的运动速度为：</p>
 <p>$ \dot{\mathbf{P}} = -\mathbf{v} - \boldsymbol{\omega} \times \mathbf{P} $</p>
 <p>写成分量形式：</p>
-<p>$ \begin{aligned}<br>
-\dot{X} &amp;= -v_x - \omega_y Z + \omega_z Y \<br>
-\dot{Y} &amp;= -v_y - \omega_z X + \omega_x Z \<br>
-\dot{Z} &amp;= -v_z - \omega_x Y + \omega_y X<br>
-\end{aligned} \tag{3} $</p></div>
+<p>$$
+\begin{aligned}
+\dot{X} &amp;= -v_x - \omega_y Z + \omega_z Y \\
+\dot{Y} &amp;= -v_y - \omega_z X + \omega_x Z \\
+\dot{Z} &amp;= -v_z - \omega_x Y + \omega_y X
+\end{aligned} \tag{3}
+$$</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
