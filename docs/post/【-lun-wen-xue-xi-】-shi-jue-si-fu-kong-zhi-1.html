@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html data-color-mode="light" data-dark-theme="dark_colorblind" data-light-theme="light" lang="zh-CN">
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="content-type" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href='https://mirrors.sustech.edu.cn/cdnjs/ajax/libs/Primer/21.0.7/primer.css' rel='stylesheet' />
+    <script src='https://blog.meekdai.com/Gmeek/plugins/GmeekVercount.js'></script>
+    <link rel="icon" href="https://wwwhtblog-1309008871.cos.ap-beijing.myqcloud.com/blog/202411281106313.svg"><script>
+        let theme = localStorage.getItem("meek_theme") || "light";
+        document.documentElement.setAttribute("data-color-mode", theme);
+    </script>
+<meta name="description" content="论文：https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf
+
+论文：[https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf](https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf)
+
+# Intro
+视觉伺服： 把计算机视觉得到的信息放进控制回路里，用来控制机器人运动。">
+<meta property="og:title" content="【论文学习】视觉伺服控制1">
+<meta property="og:description" content="论文：https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf
+
+论文：[https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf](https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf)
+
+# Intro
+视觉伺服： 把计算机视觉得到的信息放进控制回路里，用来控制机器人运动。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://wwwht.github.io/post/%E3%80%90-lun-wen-xue-xi-%E3%80%91-shi-jue-si-fu-kong-zhi-1.html">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/Meekdai/meekdai.github.io/logo64.jpg">
+<title>【论文学习】视觉伺服控制1</title>
+
+
+
+</head>
+<style>
+body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;padding: 45px;font-size: 16px;font-family: sans-serif;line-height: 1.25;}
+#header{display:flex;padding-bottom:8px;border-bottom: 1px solid var(--borderColor-muted, var(--color-border-muted));margin-bottom: 16px;}
+#footer {margin-top:64px; text-align: center;font-size: small;}
+
+</style>
+
+<style>
+.postTitle{margin: auto 0;font-size:40px;font-weight:bold;}
+.title-right{display:flex;margin:auto 0 0 auto;}
+.title-right .circle{padding: 14px 16px;margin-right:8px;}
+#postBody{border-bottom: 1px solid var(--color-border-default);padding-bottom:36px;}
+#postBody hr{height:2px;}
+#cmButton{height:48px;margin-top:48px;}
+#comments{margin-top:64px;}
+.g-emoji{font-size:24px;}
+@media (max-width: 600px) {
+    body {padding: 8px;}
+    .postTitle{font-size:24px;}
+}
+
+</style>
+<style>#postBody{font-size:18px}</style>
+
+
+
+<body>
+    <div id="header">
+<h1 class="postTitle">【论文学习】视觉伺服控制1</h1>
+<div class="title-right">
+    <a href="https://wwwht.github.io" id="buttonHome" class="btn btn-invisible circle" title="首页">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathHome" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+    <a href="https://github.com/wwwht/wwwht.github.io/issues/10" target="_blank" class="btn btn-invisible circle" title="Issue">
+        <svg class="octicon" width="16" height="16">
+            <path id="pathIssue" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+    
+
+    <a class="btn btn-invisible circle" onclick="modeSwitch();" title="切换主题">
+        <svg class="octicon" width="16" height="16" >
+            <path id="themeSwitch" fill-rule="evenodd"></path>
+        </svg>
+    </a>
+
+</div>
+</div>
+    <div id="content">
+<div class="markdown-body" id="postBody"><p>论文：<a href="https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf" rel="nofollow">https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf</a></p>
+<p>论文：<a href="https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf" rel="nofollow">https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf</a></p>
+<h1>Intro</h1>
+<p>视觉伺服： 把计算机视觉得到的信息放进控制回路里，用来控制机器人运动。相机可以装在机械臂末端或移动机器人上，也可以固定在环境里；但这篇教程主要聚焦在 <strong>eye-in-hand</strong> 场景，也就是相机跟着机器人一起运动。</p>
+<p><strong>文章的关注点</strong><br>
+作者强调，视觉伺服横跨图像处理、计算机视觉和控制理论，但这篇 Part I 不会把这些全展开，而是主要讲：</p>
+<ul>
+<li>控制问题怎么建模</li>
+<li>与视觉伺服特别相关的几何问题<br>
+同时它<strong>不重点讨论</strong>特征跟踪和三维位姿估计，因为那两块本身就值得单独讲。</li>
+</ul>
+<h1><strong>The Basic Components of Visual Servoing</strong></h1>
+<p><strong>1. 先定义视觉伺服要最小化的误差</strong><br>
+论文把误差写成</p>
+<p>$ e(t)=s(m(t),a)-s^* $</p>
+<p>这里：</p>
+<ul>
+<li>$ m(t) $ 是图像测量量，比如特征点坐标、目标质心等；</li>
+<li>$ s(m(t),a) $ 是从这些测量量里提取出来的视觉特征；</li>
+<li>$ a $ 表示一些额外已知信息，比如粗略内参、物体模型；</li>
+<li>$ s^* $ 是目标特征。<br>
+也就是说，这一节先告诉你：<strong>视觉伺服的目标，就是让当前视觉特征逼近期望视觉特征。</strong></li>
+</ul>
+<p><strong>2. 说明本文当前研究的场景假设</strong><br>
+这一节限定了 Part I 讨论的是：</p>
+<ul>
+<li>目标位姿固定；</li>
+<li>目标本身不动；</li>
+<li>特征变化只由相机运动引起；</li>
+<li>控制对象是一个 <strong>6 自由度相机</strong>。<br>
+这个设定是为了先讲最经典、最基础的视觉伺服模型。</li>
+</ul>
+<p><strong>3. 给出特征变化和相机速度之间的关系</strong><br>
+论文引入了</p>
+<p>$ \dot s = L_s v_c $</p>
+<p>其中 $ v_c $ 是相机空间速度，$ L_s $ 是 <strong>interaction matrix（交互矩阵）</strong>，也常叫 feature Jacobian。<br>
+接着因为误差 $ e $ 就是由 $ s $ 构成（对误差公式对时间求导时$ \dot e(t)=\dot s(t)-\dot s^*=\dot s(t) $，所以$ L_e = L_s<br>
+​<br>
+$），所以有</p>
+<p>$ \dot e = L_e v_c $</p>
+<p>这一步非常关键，因为它把“图像/视觉特征怎么变”直接和“机器人该怎么动”连接起来了。</p>
+<p><strong>4. 推出最基本的控制律</strong><br>
+如果希望误差按指数形式衰减：</p>
+<p>$ \dot e=-\lambda e $</p>
+<p>那么就能得到最基本的速度控制律：</p>
+<p>$ v_c=-\lambda L_e^+ e $</p>
+<p>如果 $ k=6 $ 且 $ L_e $ 可逆，还可以写成</p>
+<p>$ v_c=-\lambda L_e^{-1}e $</p>
+<p>但论文马上强调：现实里 $ L_e $ 或 $ L_e^+ $ 通常不可能精确已知，所以实际控制里常常用它们的<strong>估计或近似</strong>：</p>
+<p>$ v_c=-\lambda \hat L_e^+ e $</p>
+<p>这就是大多数视觉伺服控制器的基本形式。</p>
+<h1><strong>Classical Image-Based Visual Servo</strong></h1>
+<ol>
+<li><strong>IBVS 直接用图像特征做控制</strong></li>
+</ol>
+<p>这一节一开始说，传统 IBVS 直接把<strong>图像平面上的点特征坐标</strong>当作视觉特征 (s)。常见做法是取若干特征点的图像坐标；图像测量 (m) 通常是像素坐标，而参数 (a) 主要就是相机内参，用来把像素坐标变成<strong>归一化图像坐标</strong>。也就是说，IBVS 的核心思想是：<strong>不先恢复完整三维位姿，而是直接让图像里的特征点走到目标位置。</strong></p>
+<ol start="2">
+<li>推导交互矩阵</li>
+</ol>
+<p>作者接着以单个空间点为例推导交互矩阵。对空间点 $ X=(X,Y,Z) $，其图像坐标记为 $ x=(x,y) $，并取</p>
+<p>$ s=x=(x,y). $</p>
+<p>通过对投影关系求导，并把三维点速度和相机空间速度联系起来，得到</p>
+<p>$ \dot x = L_x v_c, $</p>
+<p>其中 $ L_x $ 是单点的 interaction matrix（交互矩阵/图像雅可比）。这一节的关键含义是：</p>
+<ul>
+<li>图像特征变化可以线性写成相机速度的函数；</li>
+<li>但这个矩阵里显式含有 **深度 **$ Z $；</li>
+<li>同时图像特征计算还依赖相机内参。</li>
+</ul>
+<p>所以，<strong>IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息</strong>；至少要知道或近似知道深度和内参。</p>
+<h1>单个点特征的交互矩阵（图像雅可比矩阵）推导</h1>
+<h2>1. 问题描述</h2>
+<p>考虑相机观察一个静态的三维点。设该点在相机坐标系下的坐标为：</p>
+<p>$ \mathbf{P} = \begin{bmatrix} X \ Y \ Z \end{bmatrix} $</p>
+<p>其对应的图像点（归一化平面坐标）为：</p>
+<p>$ \mathbf{x} = \begin{bmatrix} x \ y \end{bmatrix} = \begin{bmatrix} \frac{X}{Z} \ \frac{Y}{Z} \end{bmatrix} $</p>
+<p>其中，$ Z &gt; 0 $ 是点的深度。</p>
+<p>在视觉伺服中，我们通常选取图像点的坐标作为视觉特征，即：</p>
+<p>$ \mathbf{s} = \mathbf{x} = \begin{bmatrix} x \ y \end{bmatrix} $</p>
+<p>目标是建立图像特征变化率 $ \dot{\mathbf{s}} = [\dot{x}, \dot{y}]^\top $ 与相机运动速度 $ \mathbf{v}_c = [v_x, v_y, v_z, \omega_x, \omega_y, \omega_z]^\top $ 之间的线性关系：</p>
+<p>$ \dot{\mathbf{s}} = \mathbf{L}_s \mathbf{v}_c $</p>
+<p>其中，$ \mathbf{L}_s $ 即为<strong>交互矩阵</strong>（Interaction Matrix），也称为<strong>图像雅可比矩阵</strong>（Image Jacobian）。</p>
+<h2>2. 对投影方程求导</h2>
+<p>由 $ x = \dfrac{X}{Z} $, $ y = \dfrac{Y}{Z} $，对时间求导，利用商的求导法则：</p>
+<p>$ \dot{x} = \frac{\dot{X}Z - X\dot{Z}}{Z^2} = \frac{\dot{X} - x\dot{Z}}{Z} \tag{1} $</p>
+<p>$ \dot{y} = \frac{\dot{Y}Z - Y\dot{Z}}{Z^2} = \frac{\dot{Y} - y\dot{Z}}{Z} \tag{2} $</p>
+<p>注意，这里 $ \dot{X}, \dot{Y}, \dot{Z} $ 是点 $ \mathbf{P} $ 在相机坐标系下的速度分量。由于我们假设点是静止的，而相机在运动，因此 $ \dot{X}, \dot{Y}, \dot{Z} $ 实际上是由相机运动引起的点在相机坐标系中的相对速度。</p>
+<h2>3. 将点的速度表示为相机速度的函数</h2>
+<p>对于一个相对于相机以角速度 $ \boldsymbol{\omega} = [\omega_x, \omega_y, \omega_z]^\top $ 和平移速度 $ \mathbf{v} = [v_x, v_y, v_z]^\top $ 运动的点（注意：由于点是静止的，相机运动导致点在相机坐标系中的运动速度正好相反），其在相机坐标系中的运动速度为：</p>
+<p>$ \dot{\mathbf{P}} = -\mathbf{v} - \boldsymbol{\omega} \times \mathbf{P} $</p>
+<p>写成分量形式：</p>
+<p>$ \begin{aligned}<br>
+\dot{X} &amp;= -v_x - \omega_y Z + \omega_z Y \<br>
+\dot{Y} &amp;= -v_y - \omega_z X + \omega_x Z \<br>
+\dot{Z} &amp;= -v_z - \omega_x Y + \omega_y X<br>
+\end{aligned} \tag{3} $</p>
+<h2>4. 代入求导公式</h2>
+<p>将式 (3) 代入式 (1) 和式 (2)。</p>
+<h3>4.1 推导 $ \dot{x} $</h3>
+<p>首先，计算 $ \dot{x} $：</p>
+<p>$ \begin{aligned}<br>
+\dot{x} &amp;= \frac{1}{Z} \left[ \dot{X} - x \dot{Z} \right] \<br>
+&amp;= \frac{1}{Z} \left[ (-v_x - \omega_y Z + \omega_z Y) - x(-v_z - \omega_x Y + \omega_y X) \right] \<br>
+&amp;= \frac{1}{Z} \left[ -v_x - \omega_y Z + \omega_z Y + x v_z + x \omega_x Y - x \omega_y X \right]<br>
+\end{aligned} $</p>
+<p>将 $ X = xZ $, $ Y = yZ $ 代入：</p>
+<p>$ \begin{aligned}<br>
+\dot{x} &amp;= \frac{1}{Z} \left[ -v_x - \omega_y Z + \omega_z (yZ) + x v_z + x \omega_x (yZ) - x \omega_y (xZ) \right] \<br>
+&amp;= \frac{1}{Z} \left[ -v_x + x v_z \right] + \left[ -\omega_y + y \omega_z + x y \omega_x - x^2 \omega_y \right] \<br>
+&amp;= -\frac{v_x}{Z} + \frac{x v_z}{Z} + xy \omega_x - (1 + x^2) \omega_y + y \omega_z<br>
+\end{aligned} \tag{4} $</p>
+<h3>4.2 推导 $ \dot{y} $</h3>
+<p>类似地，计算 $ \dot{y} $：</p>
+<p>$ \begin{aligned}<br>
+\dot{y} &amp;= \frac{1}{Z} \left[ \dot{Y} - y \dot{Z} \right] \<br>
+&amp;= \frac{1}{Z} \left[ (-v_y - \omega_z X + \omega_x Z) - y(-v_z - \omega_x Y + \omega_y X) \right] \<br>
+&amp;= \frac{1}{Z} \left[ -v_y - \omega_z X + \omega_x Z + y v_z + y \omega_x Y - y \omega_y X \right]<br>
+\end{aligned} $</p>
+<p>代入 $ X = xZ $, $ Y = yZ $：</p>
+<p>$ \begin{aligned}<br>
+\dot{y} &amp;= \frac{1}{Z} \left[ -v_y - \omega_z (xZ) + \omega_x Z + y v_z + y \omega_x (yZ) - y \omega_y (xZ) \right] \<br>
+&amp;= \frac{1}{Z} \left[ -v_y + y v_z \right] + \left[ -x \omega_z + \omega_x + y^2 \omega_x - x y \omega_y \right] \<br>
+&amp;= -\frac{v_y}{Z} + \frac{y v_z}{Z} + (1 + y^2) \omega_x - xy \omega_y - x \omega_z<br>
+\end{aligned} \tag{5} $</p>
+<h2>5. 写成矩阵形式</h2>
+<p>将式 (4) 和式 (5) 按照 $ \mathbf{v}_c = [v_x, v_y, v_z, \omega_x, \omega_y, \omega_z]^\top $ 的顺序整理成矩阵形式：</p>
+<p>$ \begin{bmatrix} \dot{x} \ \dot{y} \end{bmatrix} = \mathbf{L}_x \begin{bmatrix} v_x \ v_y \ v_z \ \omega_x \ \omega_y \ \omega_z \end{bmatrix} $</p>
+<p>其中，交互矩阵 $ \mathbf{L}_x $ 为：</p>
+<p>$ \boxed{<br>
+\mathbf{L}_x = \begin{bmatrix}<br>
+-\frac{1}{Z} &amp; 0 &amp; \frac{x}{Z} &amp; xy &amp; -(1+x^2) &amp; y \<br>
+0 &amp; -\frac{1}{Z} &amp; \frac{y}{Z} &amp; 1+y^2 &amp; -xy &amp; -x<br>
+\end{bmatrix}<br>
+} \tag{6} $</p>
+<p>这就是<strong>单个点特征（归一化坐标）的交互矩阵</strong>。</p>
+<h2>6. 交互矩阵的物理意义</h2>
+<p>$ \mathbf{L}_x $ 的每一列对应于相机速度的一个分量对图像特征速度的贡献。</p>
+<markdown-accessiblity-table><table role="table">
+<thead>
+<tr>
+<th>列</th>
+<th>对应速度分量</th>
+<th>对 $ \dot{x} $ 的贡献</th>
+<th>对 $ \dot{y} $ 的贡献</th>
+<th>物理意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>$ v_x $</td>
+<td>$ -\dfrac{1}{Z} $</td>
+<td>$ 0 $</td>
+<td>相机沿 $ X $ 轴平移：点在图像上水平移动，速度与深度 $ Z $ 成反比</td>
+</tr>
+<tr>
+<td>2</td>
+<td>$ v_y $</td>
+<td>$ 0 $</td>
+<td>$ -\dfrac{1}{Z} $</td>
+<td>相机沿 $ Y $ 轴平移：点在图像上垂直移动，速度与深度 $ Z $ 成反比</td>
+</tr>
+<tr>
+<td>3</td>
+<td>$ v_z $</td>
+<td>$ \dfrac{x}{Z} $</td>
+<td>$ \dfrac{y}{Z} $</td>
+<td>相机沿 $ Z $ 轴（光轴）平移：引起图像点径向移动（缩放效应）</td>
+</tr>
+<tr>
+<td>4</td>
+<td>$ \omega_x $</td>
+<td>$ xy $</td>
+<td>$ 1+y^2 $</td>
+<td>相机绕 $ X $ 轴旋转（俯仰）：引起图像点纵向移动和变形</td>
+</tr>
+<tr>
+<td>5</td>
+<td>$ \omega_y $</td>
+<td>$ -(1+x^2) $</td>
+<td>$ -xy $</td>
+<td>相机绕 $ Y $ 轴旋转（偏航）：引起图像点横向移动和变形</td>
+</tr>
+<tr>
+<td>6</td>
+<td>$ \omega_z $</td>
+<td>$ y $</td>
+<td>$ -x $</td>
+<td>相机绕 $ Z $ 轴旋转（滚转）：引起图像点绕图像中心旋转</td>
+</tr>
+</tbody>
+</table></markdown-accessiblity-table>
+<p><strong>注意</strong>：</p>
+<ul>
+<li>平移运动（前三列）引起的图像速度<strong>依赖于深度</strong> $ Z $。点越近（$ Z $ 越小），图像变化越快。</li>
+<li>旋转运动（后三列）引起的图像速度<strong>与深度无关</strong>，只与图像点坐标 $ (x, y) $ 有关。</li>
+</ul>
+<h2>7. 扩展到多个点</h2>
+<p>对于 $ n $ 个点，将每个点的交互矩阵堆叠起来，形成总交互矩阵：</p>
+<p>$ \mathbf{L} = \begin{bmatrix} \mathbf{L}<em>{x_1} \ \mathbf{L}</em>{x_2} \ \vdots \ \mathbf{L}_{x_n} \end{bmatrix} $</p>
+<p>此时，图像特征向量为所有点的坐标拼接而成：</p>
+<p>$ \mathbf{s} = [x_1, y_1, x_2, y_2, \dots, x_n, y_n]^\top $</p>
+<p>特征变化率为：</p>
+<p>$ \dot{\mathbf{s}} = \mathbf{L} \mathbf{v}_c $</p>
+<p>在视觉伺服控制中，通常需要至少 3 个点（6 个特征）才能保证交互矩阵列满秩（6 列），从而唯一求解相机速度。使用少于 3 个点可能导致奇异或欠约束问题。</p>
+<h2>8. 在视觉伺服控制中的应用</h2>
+<p>在基于图像的视觉伺服（IBVS）中，控制律通常设计为：</p>
+<p>$ \mathbf{v}_c = -\lambda \widehat{\mathbf{L}}^+ \mathbf{e} $</p>
+<p>其中：</p>
+<ul>
+<li>$ \mathbf{e} = \mathbf{s} - \mathbf{s}^* $ 是当前特征与期望特征之间的误差；</li>
+<li>$ \widehat{\mathbf{L}}^+ $ 是交互矩阵的估计伪逆；</li>
+<li>$ \lambda &gt; 0 $ 是控制增益。</li>
+</ul>
+<p><strong>注意</strong>：在实际系统中，真实的深度 $ Z $ 往往未知，因此常用估计值 $ \widehat{Z} $ 代替，或者使用其他近似方法（如常数近似、深度独立控制等）。这就是为什么实际控制中常用估计的交互矩阵 $ \widehat{\mathbf{L}} $ 的原因。</p>
+<h2>9. 关键点总结</h2>
+<ol>
+<li><strong>交互矩阵的推导</strong>基于投影几何和刚体运动学。</li>
+<li><strong>图像特征变化率</strong>与相机速度呈线性关系，但该关系依赖于特征点的深度。</li>
+<li><strong>平移运动</strong>引起的图像变化与深度成反比，而<strong>旋转运动</strong>引起的图像变化与深度无关。</li>
+<li>实际应用中，深度信息往往不准确，需要使用估计或近似方法。</li>
+<li>多个点时，将单个点的交互矩阵堆叠即可，但需注意点的数量应足够以保证交互矩阵满秩</li>
+</ol>
+<h1>近似计算交互矩阵</h1>
+<p>这一小节主要讲的是：<strong>在实际 IBVS 控制里，交互矩阵 $ L_e $ 往往不能精确已知，所以必须构造一个近似的 $ \hat L_e^+ $ 来代替它的伪逆进入控制律。</strong> 论文在这里重点比较了 3 种常见近似方法，以及它们各自的效果。</p>
+<p>先说为什么要“approximate”。前一节已经推到单点交互矩阵 $ L_x $，其中显式包含深度$  Z $；同时图像特征 (x,y) 的计算也涉及相机内参。所以 $  L_x $ 不能直接精确用于控制，必须对它或它的伪逆做估计。作者还提醒：如果只用 3 个点控制 6 自由度，会出现奇异构型和多解问题，因此实际通常用多于 3 个点。</p>
+<p>在这个前提下，论文给了 3 种构造 $ \hat L_e^+ $ 的办法：</p>
+<p>第一种是 <strong>直接用当前交互矩阵的伪逆</strong><br>
+$ \hat {L_e^+} = L_e^+ $<br>
+前提是当前的 $ L_e $ 已知，也就是每个特征点的<strong>当前深度 (Z)</strong> 都可得。论文说这类参数在实践中通常需要在控制迭代过程中不断估计。</p>
+<p>第二种是 <strong>用目标位姿处交互矩阵的伪逆</strong><br>
+$ \hat {L_e^+} = L_{e^*}^+ $</p>
+<p>这里 $ L_{e^*} $ 是误差为零、也就是目标位置处的交互矩阵。它的好处是：$ \hat {L_e^+} $ 变成一个<strong>常数矩阵</strong>，只需要预先设定每个点的<strong>目标深度</strong>，视觉伺服过程中就不需要在线估计变化的三维参数。</p>
+<p>第三种是 <strong>取当前与目标交互矩阵的平均</strong><br>
+$ \hat {L_e^+} = \tfrac12 (L_e + L_{e*})^+ $<br>
+这是文中提到的一个较新的折中方法。因为它包含 $ L_e $ ，所以仍然需要当前深度信息；但作者后面通过仿真说明，这种做法通常能得到更平滑、更好的综合表现。</p>
+<p>然后这一节用一个具体例子来比较三种方法：让相机把一个方形目标调整到图像中心。作者故意选了一个离目标位姿较远、尤其旋转偏差很大的初始位姿，因为这正是 IBVS 最容易暴露问题的情况。</p>
+<p>仿真结论是：</p>
+<ul>
+<li>用 $ L_{e^*}^+ $ 时，系统虽然能收敛，但在远离目标时，图像行为、相机速度和三维轨迹都不够理想。</li>
+<li>用 $ L_e^+ $ 时，图像点轨迹接近直线，但三维运动更差，初始阶段相机速度很大，说明矩阵条件数较高，轨迹离直线也很远。</li>
+<li>用 $ \tfrac12 (L_e + L_{e^*})^+ $ 时，速度分量没有大振荡，图像空间和三维空间里的轨迹都更平滑，论文明确说它在实践中表现较好。</li>
+</ul>
+<p>所以这一节的核心意思可以概括成一句话：</p>
+<p><strong>Approximating the Interaction Matrix 这一节在回答“控制律里的 $ \hat {L_e^+} $ 到底怎么选”——作者比较了基于当前矩阵、目标矩阵和二者平均的三种近似，并指出平均法通常是更好的折中。</strong></p>
+<h1>IBVS的几何解释</h1>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/599be470b573aa8e99c8636ba0b610e7b17a60d1e9bb6a39c29b815d2db81a16/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535323636343437372d33343866646566342d383836302d346166652d616561332d3433353461663635613463612e706e67"><img src="https://camo.githubusercontent.com/599be470b573aa8e99c8636ba0b610e7b17a60d1e9bb6a39c29b815d2db81a16/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535323636343437372d33343866646566342d383836302d346166652d616561332d3433353461663635613463612e706e67" width="546.3333740234375" title="" id="user-content-u9e02c76b" data-canonical-src="https://cdn.nlark.com/yuque/0/2026/png/2636058/1775552664477-348fdef4-8860-4afe-aea3-4354af65a4ca.png" style="max-width: 100%;"></a></p>
+<p>这一节，通过一个具体的几何例子，直观地解释了<strong>基于图像的视觉伺服</strong> 中不同控制策略所导致的行为差异，特别是解释了为什么IBVS在应对大范围旋转时会产生非直观的相机运动。</p>
+<p>该节的核心分析围绕一个特定任务展开：<strong>相机需要绕其光轴（Z轴）进行纯旋转</strong>，以使一组共面点从初始位姿（蓝色）到达平行于图像平面的期望位姿（红色）。</p>
+<p>以下是该节阐述的三种不同控制策略在此场景下的几何行为：</p>
+<ol>
+<li>
+<strong>使用当前交互矩阵的逆</strong>： $ \hat {L_e^+} = L_e^+ $
+<ul>
+<li>
+<strong>控制目标</strong>：此控制律试图使图像误差<code class="notranslate">e</code>指数衰减。当误差<code class="notranslate">e</code>由点的图像坐标<code class="notranslate">(x, y)</code>构成时，这意味着控制律会<strong>驱使图像中的点沿直线</strong>从其初始位置（蓝色）运动到期望位置（红色）。</li>
+<li>
+<strong>实际产生的图像运动</strong>：为了产生这种“直线”图像运动（图中绿色路径），相机必须执行一个<strong>复合运动</strong>：除了绕光轴旋转外，还会伴随一个<strong>沿光轴向后</strong>的平移运动。这是一个反直觉的现象。</li>
+<li>
+<strong>原因</strong>：这是由于所选图像特征（点的坐标）与相机运动自由度之间存在<strong>耦合</strong>。具体来说，交互矩阵的第三列（对应沿光轴的平移）和第六列（对应绕光轴的旋转）是耦合的。当旋转误差很大时，这种现象会被放大。在极限情况下（如绕光轴旋转180度），控制律甚至可能完全无法产生旋转运动。</li>
+</ul>
+</li>
+<li>
+<strong>使用期望位置交互矩阵的逆</strong>： $ \hat {L_e^+} = L_{e^*}^+ $
+<ul>
+<li>
+<strong>产生的图像运动</strong>：从期望位置（红点）看向初始位置（蓝点），该控制律会产生从红点到蓝点的直线运动（图中棕色路径）。那么，从初始位置到期望位置的实际控制，就是此速度的相反数。因此，在初始位置（蓝点）处，它产生的图像运动方向是图中<strong>蓝色箭头</strong>所示的方向。</li>
+<li>
+<strong>对应的相机运动</strong>：为了实现这种图像运动，相机的实际运动是绕光轴旋转，但同时伴随一个<strong>沿光轴向前</strong>的平移。这与第一种情况的方向相反，但同样是“旋转+意外平移”的复合运动。</li>
+</ul>
+</li>
+<li>
+<strong>使用当前与期望交互矩阵的平均值的逆</strong>：$ \hat {L_e^+} = \tfrac12 (L_e + L_{e*})^+ $
+<ul>
+<li>
+<strong>行为</strong>：这种方法直观上是在前两种极端行为之间取平均。因此，它产生的图像运动是图中<strong>黑色箭头</strong>所示的路径。在旋转误差较大时，其行为优于前两种；当误差减小时，三种方法的行为会趋于一致。</li>
+</ul>
+</li>
+</ol>
+<p><strong>核心结论</strong>：</p>
+<ul>
+<li><strong>局部与全局行为</strong>：IBVS在<strong>误差较小</strong>（即接近目标位置）时，所有方法都能产生令人满意的行为——图像点沿近似直线的路径运动，相机运动也接近纯旋转。</li>
+<li><strong>大位移问题</strong>：当<strong>初始误差很大</strong>（特别是存在大旋转）时，由于特征与运动间的非线性耦合，IBVS可能产生不理想、甚至不直观的相机3D运动（如额外的后退或前进）。</li>
+<li><strong>几何解释的意义</strong>：这一节清晰地揭示了IBVS控制器内在的、由特征选择决定的几何特性。它回答了“为什么IBVS有时会产生奇怪的相机路径”这一问题，并为理解其稳定性分析（局部稳定但可能存在局部极小值）提供了直观背景。</li>
+</ul>
+<h1>使用立体视觉系统的IBVS</h1>
+<p>“IBVS with a Stereovision System”（基于立体视觉系统的IBVS）这一节的核心，是阐述如何将单目IBVS的框架扩展到双目（立体视觉）系统，并揭示其中的关键变化与约束。</p>
+<p><strong>双目系统的视觉特征选择</strong></p>
+<p>在双目系统中，如果一个三维点 (P) 同时在左、右相机图像中可见，其视觉特征向量 (s) 可以自然地定义为该点在<strong>两个图像平面中坐标的堆叠</strong>：<br>
+$ s = \mathbf{x}_s = (\mathbf{x}_l, \mathbf{x}_r) = (x_l, y_l, x_r, y_r) $<br>
+这仍然属于<strong>基于图像</strong>的方法，因为特征直接来源于图像坐标，未引入三维几何模型。</p>
+<p>关键问题：交互矩阵的坐标系统一</p>
+<p>直接堆叠特征后，不能简单地将单目的交互矩阵 (L_x) 直接堆叠使用。因为：<br>
+$ \dot{\mathbf{x}}l = L{\mathbf{x}_l} \mathbf{v}_l, \quad \dot{\mathbf{x}}r = L{\mathbf{x}_r} \mathbf{v}_r $<br>
+其中 $ \mathbf{v}_l $ 和 $ \mathbf{v}_r $ 分别是左、右相机坐标系下的空间速度。我们需要一个统一的<strong>传感器坐标系</strong>（例如与双目系统刚性固联的坐标系）来表达整个系统的运动 $  \mathbf{v}_s $ 。</p>
+<p>解决方案：利用空间运动变换矩阵</p>
+<p>引入<strong>空间运动变换矩阵</strong> (V)，用于将速度从一个坐标系变换到另一个坐标系。其形式为：<br>
+$ V = \begin{bmatrix}<br>
+R &amp; [\mathbf{t}]<em>{\times} R \<br>
+0 &amp; R<br>
+\end{bmatrix} $</em><br>
+_其中 $ (R, \mathbf{t}) \in SE(3) $ 是从相机坐标系到传感器坐标系的刚体变换（由双目标定得到）。利用此矩阵，双目系统的<strong>整体交互矩阵</strong>可构造为：</p>
+<p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3e98bda7f02d38f7e572c44ad927714ef642d03fbbe9f383aaf9006d2e54cc11/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535333536333137382d34323763666334652d326630632d343039322d393662652d3534353034303564303565392e706e67"><img src="https://camo.githubusercontent.com/3e98bda7f02d38f7e572c44ad927714ef642d03fbbe9f383aaf9006d2e54cc11/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535333536333137382d34323763666334652d326630632d343039322d393662652d3534353034303564303565392e706e67" width="321.3333333333333" title="" id="user-content-ue9c70fd4" data-canonical-src="https://cdn.nlark.com/yuque/0/2026/png/2636058/1775553563178-427cfc4e-2f0c-4092-96be-5450405d05e9.png" style="max-width: 100%;"></a></p>  
+**这是实现双目IBVS的技术核心**。
+<p><strong>双目也自然引向 PBVS</strong></p>
+<p>本节最后还提到一个很自然的延伸：既然双目系统里，一个点在左右图像中都可见，那么可以通过<strong>三角化</strong>很容易恢复该点的三维坐标。这样一来，如果把这些三维坐标直接放进特征向量 sss 里，那方法就已经不再是纯 IBVS，而更接近 <strong>PBVS</strong> 了。</p>
+<h1>PBVS</h1>
+<p>PBVS（Position-Based Visual Servo）不是直接控制图像误差，而是先从图像中估计相机相对目标的三维位姿，再在三维空间里做闭环控制。</p>
+<p>论文一开始就说，PBVS 用的是**相机相对于某个参考坐标系的 pose（位姿）**来定义特征 s。这和 IBVS 最大的区别就在这里：</p>
+<ul>
+<li><strong>IBVS</strong>：特征 s直接取图像里的量，比如点的 (x,y)</li>
+<li><strong>PBVS</strong>：特征 s 取三维量，比如平移和旋转参数</li>
+</ul>
+<p>也就是说，IBVS 里的 s是图像特征，而 PBVS 里的 s 是 <strong>3D pose parameters</strong>。为了从单张图像恢复这个位姿，必须已知：</p>
+<ul>
+<li>相机内参</li>
+<li>被观测目标的 3D 模型</li>
+</ul>
+<p>这本质上就是经典的 <strong>3D localization / pose estimation</strong> 问题。</p>
+<h2>用到的坐标系</h2>
+<p>为了描述当前位姿和目标位姿，论文引入了 3 个坐标系：</p>
+<ul>
+<li>当前相机坐标系 $ F_c $</li>
+<li>目标相机坐标系 $ F_c^* $</li>
+<li>附着在物体上的参考坐标系 $ F_o $</li>
+</ul>
+<p>并用标准上标记号表示“某个点坐标是相对于哪个坐标系表达的”。例如：</p>
+<ul>
+<li>$ {}^c t_o $：物体坐标系原点相对于<strong>当前相机系</strong>的坐标</li>
+<li>$ {}^{c^*} t_o $ ：物体坐标系原点相对于<strong>目标相机系</strong>的坐标</li>
+</ul>
+<p>此外还定义了旋转矩阵</p>
+<p>$ R=^{c^∗}R_c​ $</p>
+<p>表示“当前相机坐标系相对于目标相机坐标系的方向关系”  .</p></div>
+<div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
+
+<button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
+<div class="comments" id="comments"></div>
+
+</div>
+    <div id="footer"><div id="footer1">Copyright © <span id="copyrightYear"></span> <a href="https://wwwht.github.io">wwwht</a></div>
+<div id="footer2">
+    <span id="runday"></span><span>Powered by <a href="https://meekdai.com/Gmeek.html" target="_blank">Gmeek</a></span>
+</div>
+
+<script>
+var now=new Date();
+document.getElementById("copyrightYear").innerHTML=now.getFullYear();
+
+if("11/28/2024"!=""){
+    var startSite=new Date("11/28/2024");
+    var diff=now.getTime()-startSite.getTime();
+    var diffDay=Math.floor(diff/(1000*60*60*24));
+    document.getElementById("runday").innerHTML="网站运行 "+diffDay+" 天"+" • ";
+}
+</script></div>
+</body>
+<script>
+var IconList={'sun': 'M8 10.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM8 12a4 4 0 100-8 4 4 0 000 8zM8 0a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0V.75A.75.75 0 018 0zm0 13a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 018 13zM2.343 2.343a.75.75 0 011.061 0l1.06 1.061a.75.75 0 01-1.06 1.06l-1.06-1.06a.75.75 0 010-1.06zm9.193 9.193a.75.75 0 011.06 0l1.061 1.06a.75.75 0 01-1.06 1.061l-1.061-1.06a.75.75 0 010-1.061zM16 8a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5A.75.75 0 0116 8zM3 8a.75.75 0 01-.75.75H.75a.75.75 0 010-1.5h1.5A.75.75 0 013 8zm10.657-5.657a.75.75 0 010 1.061l-1.061 1.06a.75.75 0 11-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zm-9.193 9.193a.75.75 0 010 1.06l-1.06 1.061a.75.75 0 11-1.061-1.06l1.06-1.061a.75.75 0 011.061 0z', 'moon': 'M9.598 1.591a.75.75 0 01.785-.175 7 7 0 11-8.967 8.967.75.75 0 01.961-.96 5.5 5.5 0 007.046-7.046.75.75 0 01.175-.786zm1.616 1.945a7 7 0 01-7.678 7.678 5.5 5.5 0 107.678-7.678z', 'sync': 'M1.705 8.005a.75.75 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-1.204-1.204a.25.25 0 0 1 .177-.427h3.646a.25.25 0 0 1 .25.25v3.646a.25.25 0 0 1-.427.177l-1.38-1.38A7.002 7.002 0 0 1 1.05 8.84a.75.75 0 0 1 .656-.834ZM8 2.5a5.487 5.487 0 0 0-4.131 1.869l1.204 1.204A.25.25 0 0 1 4.896 6H1.25A.25.25 0 0 1 1 5.75V2.104a.25.25 0 0 1 .427-.177l1.38 1.38A7.002 7.002 0 0 1 14.95 7.16a.75.75 0 0 1-1.49.178A5.5 5.5 0 0 0 8 2.5Z', 'home': 'M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Zm1.25 1.171a.25.25 0 0 0-.312 0l-5.25 4.2a.25.25 0 0 0-.094.196v7.019c0 .138.112.25.25.25H5.5V8.25a.75.75 0 0 1 .75-.75h3.5a.75.75 0 0 1 .75.75v5.25h2.75a.25.25 0 0 0 .25-.25V6.23a.25.25 0 0 0-.094-.195Z', 'github': 'M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z'};
+var utterancesLoad=0;
+
+let themeSettings={
+    "dark": ["dark","moon","#00f0ff","dark-blue"],
+    "light": ["light","sun","#ff5000","github-light"],
+    "auto": ["auto","sync","","preferred-color-scheme"]
+};
+function changeTheme(mode, icon, color, utheme){
+    document.documentElement.setAttribute("data-color-mode",mode);
+    document.getElementById("themeSwitch").setAttribute("d",value=IconList[icon]);
+    document.getElementById("themeSwitch").parentNode.style.color=color;
+    if(utterancesLoad==1){utterancesTheme(utheme);}
+}
+function modeSwitch(){
+    let currentMode=document.documentElement.getAttribute('data-color-mode');
+    let newMode = currentMode === "light" ? "dark" : currentMode === "dark" ? "auto" : "light";
+    localStorage.setItem("meek_theme", newMode);
+    if(themeSettings[newMode]){
+        changeTheme(...themeSettings[newMode]);
+    }
+}
+function utterancesTheme(theme){
+    const message={type:'set-theme',theme: theme};
+    const iframe=document.getElementsByClassName('utterances-frame')[0];
+    iframe.contentWindow.postMessage(message,'https://utteranc.es');
+}
+if(themeSettings[theme]){changeTheme(...themeSettings[theme]);}
+console.log("\n %c Gmeek last https://github.com/Meekdai/Gmeek \n","padding:5px 0;background:#02d81d;color:#fff");
+</script>
+
+<script>
+document.getElementById("pathHome").setAttribute("d",IconList["home"]);
+document.getElementById("pathIssue").setAttribute("d",IconList["github"]);
+
+
+
+function openComments(){
+    cm=document.getElementById("comments");
+    cmButton=document.getElementById("cmButton");
+    cmButton.disabled=true;
+    cmButton.innerHTML="loading";
+    span=document.createElement("span");
+    span.setAttribute("class","AnimatedEllipsis");
+    cmButton.appendChild(span);
+
+    script=document.createElement("script");
+    script.setAttribute("src","https://utteranc.es/client.js");
+    script.setAttribute("repo","wwwht/wwwht.github.io");
+    script.setAttribute("issue-term","title");
+    
+    if(localStorage.getItem("meek_theme")=="dark"){script.setAttribute("theme","dark-blue");}
+    else if(localStorage.getItem("meek_theme")=="light") {script.setAttribute("theme","github-light");}
+    else{script.setAttribute("theme","preferred-color-scheme");}
+    
+    script.setAttribute("crossorigin","anonymous");
+    script.setAttribute("async","");
+    cm.appendChild(script);
+
+    int=self.setInterval("iFrameLoading()",200);
+}
+
+function iFrameLoading(){
+    var utterances=document.getElementsByClassName('utterances');
+    if(utterances.length==1){
+        if(utterances[0].style.height!=""){
+            utterancesLoad=1;
+            int=window.clearInterval(int);
+            document.getElementById("cmButton").style.display="none";
+            console.log("utterances Load OK");
+        }
+    }
+}
+
+
+
+</script>
+<script async src='//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js'></script><script src='https://blog.meekdai.com/Gmeek/plugins/GmeekTOC.js'></script><script>MathJax = {tex: {inlineMath: [["$", "$"]]}};</script><script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</html>
