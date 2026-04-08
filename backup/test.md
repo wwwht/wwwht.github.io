@@ -1,4 +1,4 @@
-所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。
+11111所以，**IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息**；至少要知道或近似知道深度和内参。
 
 # 单个点特征的交互矩阵（图像雅可比矩阵）推导
 
@@ -24,7 +24,9 @@ $$
 
 在视觉伺服中，我们通常选取图像点的坐标作为视觉特征，即：
 
-$ \mathbf{s} = \mathbf{x} = \begin{bmatrix} x \\ y \end{bmatrix} $
+$$
+\mathbf{s} = \mathbf{x} = \begin{bmatrix} x \\ y \end{bmatrix}
+$$
 
 $$
  \mathbf{s} = \mathbf{x} = \begin{bmatrix} x \\
@@ -55,8 +57,10 @@ $ \dot{\mathbf{P}} = -\mathbf{v} - \boldsymbol{\omega} \times \mathbf{P} $
 
 写成分量形式：
 
-$ \begin{aligned}
+$$
+\begin{aligned}
 \dot{X} &= -v_x - \omega_y Z + \omega_z Y \\
 \dot{Y} &= -v_y - \omega_z X + \omega_x Z \\
 \dot{Z} &= -v_z - \omega_x Y + \omega_y X
-\end{aligned} \tag{3} $
+\end{aligned} \tag{3}
+$$
