@@ -462,14 +462,13 @@ $$</p>
 <p>其中 $ \mathbf{v}_l $ 和 $ \mathbf{v}_r $ 分别是左、右相机坐标系下的空间速度。我们需要一个统一的<strong>传感器坐标系</strong>（例如与双目系统刚性固联的坐标系）来表达整个系统的运动 $  \mathbf{v}_s $ 。</p>
 <p>解决方案：利用空间运动变换矩阵</p>
 <p>引入<strong>空间运动变换矩阵</strong> (V)，用于将速度从一个坐标系变换到另一个坐标系。其形式为：</p>
-<p>$$<br>
-V = \begin{bmatrix}<br>
-R &amp; [\mathbf{t}]_{\times} R \<br>
-0 &amp; R<br>
-\end{bmatrix}<br>
-$$<br>
-_<br>
-_其中 $ (R, \mathbf{t}) \in SE(3) $ 是从相机坐标系到传感器坐标系的刚体变换（由双目标定得到）。利用此矩阵，双目系统的<strong>整体交互矩阵</strong>可构造为：</p>
+<p>$$
+V = \begin{bmatrix}
+R &amp; [\mathbf{t}]_{\times} R \\
+0 &amp; R
+\end{bmatrix}
+$$</p>
+<p>其中 $ (R, \mathbf{t}) \in SE(3) $ 是从相机坐标系到传感器坐标系的刚体变换（由双目标定得到）。利用此矩阵，双目系统的<strong>整体交互矩阵</strong>可构造为：</p>
 <p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/3e98bda7f02d38f7e572c44ad927714ef642d03fbbe9f383aaf9006d2e54cc11/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535333536333137382d34323763666334652d326630632d343039322d393662652d3534353034303564303565392e706e67"><img src="https://camo.githubusercontent.com/3e98bda7f02d38f7e572c44ad927714ef642d03fbbe9f383aaf9006d2e54cc11/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737353535333536333137382d34323763666334652d326630632d343039322d393662652d3534353034303564303565392e706e67" width="321.3333333333333" title="" id="user-content-ue9c70fd4" data-canonical-src="https://cdn.nlark.com/yuque/0/2026/png/2636058/1775553563178-427cfc4e-2f0c-4092-96be-5450405d05e9.png" style="max-width: 100%;"></a></p>  
 **这是实现双目IBVS的技术核心**。
 <p><strong>双目也自然引向 PBVS</strong></p>
@@ -535,17 +534,11 @@ $$</p>
 <p><strong>第一种交互矩阵怎么写</strong></p>
 <p>论文给出对应的交互矩阵</p>
 <p>$$
-
 L_e=
-
 \begin{bmatrix}
-
--I_3 &amp;amp; [{}^c t_o]_{\times} \\
-
-0 &amp;amp; L_{\theta u}
-
+-I_3 &amp; {}^c t_o_{\times} \\
+0 &amp; L_{\theta u}
 \end{bmatrix}
-
 $$</p>
 <p>其中 $ I_3 $ 是三阶单位阵, $ [{}^c t_o]<em>\times $ 是由向量$ {}^c t_o $ 构造的反对称矩阵，$ L</em>{\theta u} $ 是轴角参数的旋转雅可比。</p>
 <p>这里最值得注意的是左上和右上的块：</p>
@@ -562,7 +555,7 @@ v_c=-\lambda L_e^{-1}e.
 $$</p>
 <p>论文进一步整理后得到显式形式：</p>
 <p>$$
-v_c = -\lambda\big(({}^{c^*}t_o-{}^c t_o)+[{}^c t_o]_\times \theta u\big)
+v_c = -\lambda\big(({}^{c^*}t_o-{}^c t_o)+{}^c t_o_\times \theta u\big)
 $$</p>
 <p>$$
 \omega_c = -\lambda \theta u.
