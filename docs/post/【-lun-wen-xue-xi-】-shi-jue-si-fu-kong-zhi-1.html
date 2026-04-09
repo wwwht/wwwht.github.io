@@ -10,12 +10,12 @@
         let theme = localStorage.getItem("meek_theme") || "light";
         document.documentElement.setAttribute("data-color-mode", theme);
     </script>
-<meta name="description" content="论文：https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf
+<meta name="description" content="论文：[https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf](https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf)
 
 # Intro
 视觉伺服： 把计算机视觉得到的信息放进控制回路里，用来控制机器人运动。">
 <meta property="og:title" content="【论文学习】视觉伺服控制1">
-<meta property="og:description" content="论文：https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf
+<meta property="og:description" content="论文：[https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf](https://www.irisa.fr/lagadic/pdf/2006_ieee_ram_chaumette.pdf)
 
 # Intro
 视觉伺服： 把计算机视觉得到的信息放进控制回路里，用来控制机器人运动。">
@@ -166,7 +166,7 @@ $$</p>
 <p>其中 $ L_x $ 是单点的 interaction matrix（交互矩阵/图像雅可比）。这一节的关键含义是：</p>
 <ul>
 <li>图像特征变化可以线性写成相机速度的函数；</li>
-<li>但这个矩阵里显式含有 **深度 ** $ Z $；</li>
+<li>但这个矩阵里显式含有深度** **$ Z $；</li>
 <li>同时图像特征计算还依赖相机内参。</li>
 </ul>
 <p>所以，<strong>IBVS 虽然是“基于图像”的方法，但并不是完全不需要几何信息</strong>；至少要知道或近似知道深度和内参。</p>
@@ -266,10 +266,12 @@ v_z \\
 $$</p>
 <p>其中，交互矩阵 $ \mathbf{L}_x $ 为：</p>
 <p>$$
+\boxed{
 \mathbf{L}_x = \begin{bmatrix}
 -\frac{1}{Z} &amp; 0 &amp; \frac{x}{Z} &amp; xy &amp; -(1+x^2) &amp; y \\
 0 &amp; -\frac{1}{Z} &amp; \frac{y}{Z} &amp; 1+y^2 &amp; -xy &amp; -x
-\end{bmatrix} \tag{6}
+\end{bmatrix}
+} \tag{6}
 $$</p>
 <p>这就是<strong>单个点特征（归一化坐标）的交互矩阵</strong>。</p>
 <h2>6. 交互矩阵的物理意义</h2>
@@ -338,17 +340,13 @@ $$</p>
 <p>对于 $ n $ 个点，将每个点的交互矩阵堆叠起来，形成总交互矩阵：</p>
 <p>$$
 
-\mathbf{L} = \begin{bmatrix}
-
-\mathbf{L}_{x_1} \\
+\mathbf{L} = \begin{bmatrix} \mathbf{L}_{x_1} \\
 
 \mathbf{L}_{x_2} \\
 
 \vdots \\
 
-\mathbf{L}_{x_n}
-
-\end{bmatrix}
+\mathbf{L}_{x_n} \end{bmatrix}
 
 $$</p>
 <p>此时，图像特征向量为所有点的坐标拼接而成：</p>
@@ -451,11 +449,11 @@ $$</p>
 <h1>使用立体视觉系统的IBVS</h1>
 <p>“IBVS with a Stereovision System”（基于立体视觉系统的IBVS）这一节的核心，是阐述如何将单目IBVS的框架扩展到双目（立体视觉）系统，并揭示其中的关键变化与约束。</p>
 <p><strong>双目系统的视觉特征选择</strong></p>
-<p>在双目系统中，如果一个三维点 (P) 同时在左、右相机图像中可见，其视觉特征向量 (s) 可以自然地定义为该点在<strong>两个图像平面中坐标的堆叠</strong>：<br>
-$$<br>
-s = \mathbf{x}_s = (\mathbf{x}_l, \mathbf{x}_r) = (x_l, y_l, x_r, y_r)<br>
-$$<br>
-这仍然属于<strong>基于图像</strong>的方法，因为特征直接来源于图像坐标，未引入三维几何模型。</p>
+<p>在双目系统中，如果一个三维点 (P) 同时在左、右相机图像中可见，其视觉特征向量 (s) 可以自然地定义为该点在<strong>两个图像平面中坐标的堆叠</strong>：</p>
+<p>$$
+s = \mathbf{x}_s = (\mathbf{x}_l, \mathbf{x}_r) = (x_l, y_l, x_r, y_r)
+$$</p>
+<p>这仍然属于<strong>基于图像</strong>的方法，因为特征直接来源于图像坐标，未引入三维几何模型。</p>
 <p>关键问题：交互矩阵的坐标系统一</p>
 <p>直接堆叠特征后，不能简单地将单目的交互矩阵 (L_x) 直接堆叠使用。因为：</p>
 <p>$$
@@ -503,9 +501,213 @@ _其中 $ (R, \mathbf{t}) \in SE(3) $ 是从相机坐标系到传感器坐标系
 </ul>
 <p>此外还定义了旋转矩阵</p>
 <p>$$
-R=^{c^∗}R_c​
+R={}^{c^∗}R_c​
 $$</p>
-<p>表示“当前相机坐标系相对于目标相机坐标系的方向关系”  .</p></div>
+<p>表示“当前相机坐标系相对于目标相机坐标系的方向关系”  .</p>
+<h2>如何选择特征</h2>
+<p>论文把特征统一写成</p>
+<p>$$
+s=(t,θu)
+$$</p>
+<p>其中：</p>
+<ul>
+<li>$ t $ 是平移向量</li>
+<li>$ \theta u $ 是旋转的轴角表示（angle/axis parameterization）</li>
+</ul>
+<p>这里 $ \theta $ 是旋转角，$ u $ 是单位旋转轴，所以 $ \theta u $ 是一个 3 维向量，既表示旋转方向，也表示旋转大小。</p>
+<p>接下来论文讨论了 <strong>两种不同的 $ t $ 选法</strong>，从而得到两种 PBVS 控制器。</p>
+<h2>第一种 PBVS：用 $ ({}^c t_o,\theta u) $</h2>
+<p><strong>第一种误差定义</strong></p>
+<p>第一种选择把平移定义在<strong>物体坐标系原点相对于当前相机系的位置</strong>上，于是：</p>
+<p>$$
+s = ({}^c t_o,\theta u), \qquad s^* = ({}^{c*}t_o, 0)
+$$</p>
+<p><strong>注意</strong>这里为什么 $ s^* $ 的第二项旋转为0，因为当到达目标时，当前相机坐标系和目标相机坐标系之间重合，没有旋转</p>
+<p>因此误差是</p>
+<p>$$
+e = ({}^c t_o - {}^{c^*} t_o,\theta u).
+$$</p>
+<p>直观上，这个误差说的是：</p>
+<ul>
+<li>当前看到的物体原点位置，和目标时应看到的位置差多少</li>
+<li>当前姿态相对于目标姿态还差多少旋转</li>
+</ul>
+<p><strong>第一种交互矩阵怎么写</strong></p>
+<p>论文给出对应的交互矩阵</p>
+<p>$$
+
+L_e=
+
+\begin{bmatrix}
+
+-I_3 &amp;amp; [{}^c t_o]_{\times} \\
+
+0 &amp;amp; L_{\theta u}
+
+\end{bmatrix}
+
+$$</p>
+<p>其中 $ I_3 $ 是三阶单位阵, $ [{}^c t_o]<em>\times $ 是由向量$ {}^c t_o $ 构造的反对称矩阵，$ L</em>{\theta u} $ 是轴角参数的旋转雅可比。</p>
+<p>这里最值得注意的是左上和右上的块：</p>
+<ul>
+<li>左上 $ -I_3 $：说明相机平移会直接影响平移误差</li>
+<li>右上 $ [{}^c t_o]_\times $ ：说明<strong>相机旋转也会影响平移误差</strong>
+</li>
+</ul>
+<p>所以这种 PBVS 的平移和转动<strong>并没有完全解耦</strong>。这点后面会直接影响轨迹形状。可以通过集合直觉来理解，相机观察一个固定的物体，当相机原地转动，物体在相机坐标系的（X,Y,Z）也会发生变化。</p>
+<p><strong>第一种控制律怎么得到</strong></p>
+<p>因为这里特征维数 (k=6)，刚好等于相机 6 自由度，所以可以直接用逆矩阵写控制律：</p>
+<p>$$
+v_c=-\lambda L_e^{-1}e.
+$$</p>
+<p>论文进一步整理后得到显式形式：</p>
+<p>$$
+v_c = -\lambda\big(({}^{c^*}t_o-{}^c t_o)+[{}^c t_o]_\times \theta u\big)
+$$</p>
+<p>$$
+\omega_c = -\lambda \theta u.
+$$</p>
+<p>这个式子很有物理意义：</p>
+<ul>
+<li>角速度 $ \omega_c $ 只和旋转误差 $ \theta u $ 有关，所以旋转误差被直接指数压缩</li>
+<li>线速度 $ v_c $ 不仅和位置差有关，还带一个 $ [{}^c t_o]_\times\theta u $ 耦合项，也就是<strong>旋转误差会“拖动”平移控制</strong>。</li>
+</ul>
+<p><strong>第一种 PBVS 的轨迹特性</strong></p>
+<p>论文对这种控制器的解释是：</p>
+<ul>
+<li>旋转运动沿着<strong>测地线</strong>（geodesic）收敛，且速度指数衰减</li>
+<li>平移参数也以相同速度衰减</li>
+<li>因此速度分量衰减得很漂亮，图 7 的速度曲线很规整</li>
+<li>在图像中，物体参考点（文中取方形中心）走的是<strong>直线</strong></li>
+<li>但相机在三维空间中的轨迹<strong>不是直线</strong>。</li>
+</ul>
+<p>所以这种方法的特征是：</p>
+<p><strong>图像里好看，速度衰减也漂亮，但三维相机路径未必最直接。</strong></p>
+<h2>第二种 PBVS：用 $ ({}^{c^*} t_c,\theta u) $</h2>
+<p><strong>第二种误差定义</strong></p>
+<p>第二种方法换了一种平移参数，取的是：</p>
+<p>$$
+s=({}^{c^*}t_c,\theta u)
+$$</p>
+<p>此时目标特征就是</p>
+<p>$$
+s^*=0
+$$</p>
+<p>因此误差直接等于</p>
+<p>$$
+e=s
+$$</p>
+<p>这表示：当前相机相对于目标相机的位置和姿态差异，直接作为要被压到零的量。</p>
+<p><strong>第二种交互矩阵</strong></p>
+<p>对应交互矩阵写成</p>
+<p>$$
+L_e=
+\begin{bmatrix}
+R &amp; 0 \\
+0 &amp; L_{\theta u}
+\end{bmatrix}
+$$</p>
+<p>这一式最重要的性质是：<br>
+<strong>平移和旋转完全解耦了。</strong></p>
+<p>因为右上角块是 0，所以旋转误差不会再直接混进平移控制里。</p>
+<p><strong>第二种控制律</strong></p>
+<p>由此直接得到非常干净的控制律：</p>
+<p>$$
+v_c = -\lambda R{}^{c^*}t_c
+$$</p>
+<p>$$
+\omega_c = -\lambda \theta u.
+$$</p>
+<p>你可以把它理解成：</p>
+<ul>
+<li>平移控制就是把当前相机往目标相机位置“直推”过去</li>
+<li>转动控制就是按轴角误差直接纠正姿态</li>
+</ul>
+<p><strong>第二种 PBVS 的轨迹特性</strong></p>
+<p>论文说这种情况下，如果位姿估计完全准确，那么：</p>
+<ul>
+<li>相机的三维轨迹是<strong>纯直线</strong></li>
+<li>但图像轨迹比前一种更差</li>
+<li>有些构型下，目标点甚至会<strong>跑出视野</strong>。</li>
+</ul>
+<p>这说明它的特点恰好和第一种互补：</p>
+<p><strong>三维空间轨迹最自然，但图像空间行为不一定好。</strong></p>
+<h2>这两种 PBVS 的本质区别</h2>
+<p>为什么只换一个平移定义，行为差这么多</p>
+<p>根本原因在于误差参数化不同，导致交互矩阵结构不同。</p>
+<p>第一种：</p>
+<p>$$
+
+L_e=
+
+\begin{bmatrix}
+
+-I_3 &amp;amp; [{}^c t_o]_\times \\
+
+0 &amp;amp; L_{\theta u}
+
+\end{bmatrix}
+
+$$</p>
+<p>平移和旋转耦合，因此控制更“视觉导向”，图像轨迹较自然，但三维相机路径不是最短。</p>
+<p>第二种：</p>
+<p>$$
+L_e=
+\begin{bmatrix}
+R &amp; 0 \\
+0 &amp; L_{\theta u}
+\end{bmatrix}
+$$</p>
+<p>平移和旋转解耦，因此三维路径更理想，但图像运动可能不理想，甚至丢失目标。</p>
+<p>所以论文其实在告诉你：<br>
+<strong>PBVS 并不是只有一种写法，误差怎么参数化，会直接决定控制器的几何行为。</strong></p>
+<h2>这一节和 IBVS 的关系</h2>
+<p>论文为什么把 PBVS 放在这里讲</p>
+<p>因为前文的统一框架是</p>
+<p>$$
+e=s-s^*, \qquad \dot e=L_e v_c, \qquad v_c=-\lambda \hat L_e+ e.
+$$</p>
+<p>IBVS 和 PBVS 的核心差异只在于 $ s $** 选什么**：</p>
+<ul>
+<li>IBVS：$ s $ 是图像里的 2D 特征</li>
+<li>PBVS：$ s $ 是三维位姿参数</li>
+</ul>
+<p>PBVS 这里其实就是把同样的控制框架搬到了<strong>位姿空间</strong>。因此它能更直接地“指定相机在 3D 空间该怎么走”。</p>
+<p><strong>PBVS 的优势</strong></p>
+<p>从这一节和后面的总结能看出，PBVS 的优点是：</p>
+<ul>
+<li>控制目标定义在三维空间，物理意义清楚</li>
+<li>可以直接设计更自然的笛卡尔轨迹</li>
+<li>理论稳定性看起来更漂亮；后文还指出，在理想位姿完全准确时，可得到全局渐近稳定结论。</li>
+</ul>
+<p><strong>PBVS 的代价</strong></p>
+<p>但它的代价也很明显：</p>
+<ul>
+<li>必须先做 pose estimation</li>
+<li>依赖相机内参与物体 3D 模型</li>
+<li>对位姿估计误差更敏感</li>
+<li>图像空间行为不一定好，可能出现目标离开视野的问题</li>
+</ul>
+<p>论文最后总结得很直接：<br>
+在 PBVS 中，视觉传感器其实被当成 <strong>3D 传感器</strong> 在用；如果单目位姿估计有偏差，哪怕图像测量误差很小，也可能导致控制精度和稳定性明显变差。</p>
+<h1>总结</h1>
+<h2>IBVS稳定性</h2>
+<ul>
+<li>❌ 不保证全局收敛</li>
+<li><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> 可能陷入局部极小</li>
+<li><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> 可能遇到奇异性</li>
+<li>✔ 在目标附近通常稳定</li>
+<li>✔ 实际中“收敛域往往还挺大”（经验结论）</li>
+</ul>
+<h2>PBVS稳定性</h2>
+<ul>
+<li>✔ 理论上全局稳定（理想条件）</li>
+<li>❌ 实际依赖位姿估计精度</li>
+<li>❌ 对噪声、标定误差非常敏感</li>
+<li><g-emoji class="g-emoji" alias="warning">⚠️</g-emoji> 可能“看起来对了但其实错了”</li>
+</ul>
+<p><strong>IBVS：稳定性好在“现实鲁棒性”，但理论上只有局部稳定；<br>
+PBVS：理论上全局稳定，但现实中依赖位姿估计，容易失真甚至不稳定。</strong></p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
