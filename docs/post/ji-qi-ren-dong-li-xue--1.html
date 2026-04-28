@@ -102,8 +102,8 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <h1>1. Introduction</h1>
 <h2>1.1 Dynamics Algorithms</h2>
 <p>刚体系统的动力学由其运动方程描述，该方程规定了作用在系统上的力与其产生的加速度之间的关系。我们将主要关注两种特定计算的算法：</p>
-<p>==<strong>正向动力学</strong>==：计算给定刚体系统在给定外力作用下的加速度响应；<br>
-==<strong>逆向动力学</strong>==：计算必须施加于给定刚体系统以产生特定加速度响应的作用力。</p>
+<p><strong>正向动力学</strong>：计算给定刚体系统在给定外力作用下的加速度响应；<br>
+<strong>逆向动力学</strong>：计算必须施加于给定刚体系统以产生特定加速度响应的作用力。</p>
 <p>正向动力学主要用于仿真。逆向动力学有多种用途，例如：运动控制系统、轨迹规划、机械设计，以及作为正向动力学计算的一个组成部分。在第9章中，我们将讨论第三种计算类型，称为混合动力学，其中给定部分加速度和力变量，任务是计算其余部分。</p>
 <p>Equation of motion for a rigid-body system:</p>
 <p>$$
@@ -116,7 +116,7 @@ $$</p>
 <li>​<code class="notranslate">H(q)</code> (Inertia Matrix)​​：相当于 ​<code class="notranslate">m</code>。但它不是一个简单的质量，而是一个<strong>惯性矩阵​</strong>（也称作质量矩阵）。它包含了系统的所有惯性信息（质量、转动惯量），并且这个矩阵会随着机器人<strong>姿态</strong>​（即关节角度 <code class="notranslate">q</code>）的改变而改变。这是因为机器人移动时，其质量分布相对于世界坐标系发生了变化。</li>
 <li>​<code class="notranslate">C(q, q̇)</code> (Force Vector)​<strong>​：这是一个</strong>综合力向量，它代表了<strong>除了外部施加的力 <code class="notranslate">τ</code> 之外的所有其他力</strong>。它相当于 <code class="notranslate">F = ma</code> 中其他所有“杂项”力的集合。它包括：
 <ul>
-<li>​<strong>科里奥利力 (Coriolis forces)​</strong>​ 和 ​<strong>离心力 (Centrifugal forces)​</strong>​：由系统部件自身的旋转运动 (<code class="notranslate">q̇</code>) 产生。</li>
+<li>​<strong>科里奥利力 (Coriolis forces)​</strong>​ 和 ​<strong>离心力 (Centrifugal forces)​</strong>​：由系统部件自身的旋转运动 (<code class="notranslate">q̇</code>) 产生。简单说一下这两个力，科里奥利力是由多个关节同时运动时的速度耦合产生的惯性效应，离心力是由单个旋转运动的速度平方产生的惯性效应。</li>
 <li>​<strong>重力 (Gravity)​</strong>​：由系统的质量和姿态 (<code class="notranslate">q</code>) 决定。</li>
 <li>​<strong>摩擦力、阻尼力等其他内力</strong>。</li>
 </ul>
