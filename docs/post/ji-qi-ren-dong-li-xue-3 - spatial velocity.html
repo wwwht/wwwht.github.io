@@ -161,7 +161,7 @@ $$</p>
 <p>接下来如何将$ \hat{\mathbf v} = (\boldsymbol{\omega} , \mathbf{v}_0) $写成坐标，方便计算和编程？例如现在有一个刚体在运动，我们如何数值上量化出来？如何把“一个刚体运动”变成“可计算的 6 个数” ？</p>
 <p><strong>这时必须选择一组基底。</strong></p>
 <p>一个向量本身是没有意义的， 除非你知道它是相对于哪组基写的。 就像一个平移向量，必须知道是相对于哪个原点的平移，否则就没有意义。</p>
-<p>速度向量是基于** Plücker 基 ：**</p>
+<p>速度向量是基于 <strong>Plücker 基 ：</strong></p>
 <p>$$
 \mathcal D_O =
 {
@@ -218,7 +218,7 @@ v_{Oz}
 \end{bmatrix}
 
 $$</p>
-<p>这里的下标 O很重要 ，表达的就是 **这个空间速度是用以O为原点的 Plücker 坐标系来表示的。 **</p>
+<p>这里的下标 O很重要 ，表达的就是 <strong>这个空间速度是用以O为原点的 Plücker 坐标系来表示的。</strong></p>
 <p>如果换一个坐标原点P，<strong>那么角速度不变，线速度会发生变化。</strong></p>
 <p>因为</p>
 <p>$$
@@ -228,8 +228,8 @@ $$</p>
 \times
 \overrightarrow{OP}
 $$</p>
-<p>这里每一项都依赖坐标系 $ O*{xyz} $, 如果换成坐标系 $ P*{xyz} $, <strong>数值上可能会发生变化，但是真实表达的运动是不变的。</strong></p>
-<p>空间速度描述整个刚体的速度场；角速度是这个速度场的全局旋转部分，所以不随参考点变；线速度部分是“所选参考点处的点速度”，参考点换了，取的点不同，所以线速度分量会变。</p></div>
+<p>这里每一项都依赖坐标系 $ O_{xyz} $, 如果换成坐标系 $ P_{xyz} $, <strong>数值上可能会发生变化，但是真实表达的运动是不变的。</strong></p>
+<p><strong>空间速度描述整个刚体的速度场；角速度是这个速度场的全局旋转部分，所以不随参考点变；线速度部分是“所选参考点处的点速度”，参考点换了，取的点不同，所以线速度分量会变。</strong></p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
