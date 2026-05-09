@@ -12,17 +12,17 @@
     </script>
 <meta name="description" content="<img src='https://cdn.nlark.com/yuque/0/2026/png/2636058/1778120488424-82894246-ec46-4ed4-82c6-1082da7725ee.png' width='904' title='' crop='0,0,1,1' id='ufae473a9' class='ne-image'>
 
- 这部分是在建立一个概念：**刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 **$ ω $** 和某个参考点处的线速度 **$ v_O $
+这部分是在建立一个概念：**刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 $\omega$ 和某个参考点处的线速度 $v_O$**
 
- 也就是所谓的 **spatial velocity / 空间速度**
+也就是所谓的 **spatial velocity / 空间速度**
 
 这里通过一个例子开始，参考上图，定义了一个刚体B和一个坐标系O， $ v_O $表示刚体相对于参考系O的线速度， $ ω $表示刚体的角速度。">
 <meta property="og:title" content="机器人动力学3 - spatial velocity">
 <meta property="og:description" content="<img src='https://cdn.nlark.com/yuque/0/2026/png/2636058/1778120488424-82894246-ec46-4ed4-82c6-1082da7725ee.png' width='904' title='' crop='0,0,1,1' id='ufae473a9' class='ne-image'>
 
- 这部分是在建立一个概念：**刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 **$ ω $** 和某个参考点处的线速度 **$ v_O $
+这部分是在建立一个概念：**刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 $\omega$ 和某个参考点处的线速度 $v_O$**
 
- 也就是所谓的 **spatial velocity / 空间速度**
+也就是所谓的 **spatial velocity / 空间速度**
 
 这里通过一个例子开始，参考上图，定义了一个刚体B和一个坐标系O， $ v_O $表示刚体相对于参考系O的线速度， $ ω $表示刚体的角速度。">
 <meta property="og:type" content="article">
@@ -86,10 +86,13 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 </div>
     <div id="content">
 <div class="markdown-body" id="postBody"><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://camo.githubusercontent.com/30b963c354d14e63aaeedb97d5d554bbd283e7f2e1da09fe4a961a455f846100/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737383132303438383432342d38323839343234362d656334362d346564342d383263362d3130383264613737323565652e706e67"><img src="https://camo.githubusercontent.com/30b963c354d14e63aaeedb97d5d554bbd283e7f2e1da09fe4a961a455f846100/68747470733a2f2f63646e2e6e6c61726b2e636f6d2f79757175652f302f323032362f706e672f323633363035382f313737383132303438383432342d38323839343234362d656334362d346564342d383263362d3130383264613737323565652e706e67" width="904" title="" id="user-content-ufae473a9" data-canonical-src="https://cdn.nlark.com/yuque/0/2026/png/2636058/1778120488424-82894246-ec46-4ed4-82c6-1082da7725ee.png" style="max-width: 100%;"></a></p>
-<p>这部分是在建立一个概念：**刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 <strong>$ ω $</strong> 和某个参考点处的线速度 **$ v_O $</p>
+<p>这部分是在建立一个概念：<strong>刚体的瞬时运动可以用两个 3D 向量完整描述：角速度 $\omega$ 和某个参考点处的线速度 $v_O$</strong></p>
 <p>也就是所谓的 <strong>spatial velocity / 空间速度</strong></p>
 <p>这里通过一个例子开始，参考上图，定义了一个刚体B和一个坐标系O， $ v_O $表示刚体相对于参考系O的线速度， $ ω $表示刚体的角速度。</p>
-<p>那么对于刚体上任意一点P的线速度为 $ v_P = v_O + ω × \overrightarrow{OP} $</p>
+<p>那么对于刚体上任意一点P的线速度为<br>
+$$<br>
+v_P = v_O + ω × \overrightarrow{OP}<br>
+$$</p>
 <p><strong>这里需要理解几点</strong>：</p>
 <ol>
 <li>任意一点P的线速度 $ v_P $和参考坐标系O的位置无关。也就是说 $ v_P $表示的是在同一时刻、同一个刚体运动、同一个点 <code class="notranslate">P</code> 的线速度 。坐标系的选择只是为了将$ v_P $表示出来，方便计算等。</li>
@@ -100,23 +103,30 @@ body{box-sizing: border-box;min-width: 200px;max-width: 900px;margin: 20px auto;
 <p>$$
 {\mathbf{i}, \mathbf{j}, \mathbf{k}} \subset E^3
 $$</p>
-<p>所以角速度可以分解为：</p>
-<h1>$$<br>
-\boldsymbol{\omega}</h1>
-<p>\omega_x \mathbf{i}<br>
-+<br>
-\omega_y \mathbf{j}<br>
-+<br>
-\omega_z \mathbf{k}<br>
+<p>所以角速度可以分解为</p>
+<p>$$
+\boldsymbol{\omega} =
+\omega_x \mathbf{i}
++
+\omega_y \mathbf{j}
++
+\omega_z \mathbf{k}
 $$</p>
 <p>线速度可以分解为：</p>
-<h1>$$<br>
-\mathbf{v}_O</h1>
-<p>v_{Ox}\mathbf{i}<br>
-+<br>
-v_{Oy}\mathbf{j}<br>
-+<br>
-v_{Oz}\mathbf{k}<br>
+<p>$$
+
+\mathbf{v}_O =
+
+v_{Ox}\mathbf{i}
+
++
+
+v_{Oy}\mathbf{j}
+
++
+
+v_{Oz}\mathbf{k}
+
 $$</p>
 <p>刚体运动可以看成六个基本运动的叠加， 因为角速度有三个分量，线速度也有三个分量，所以刚体瞬时运动可以看成六个基本运动叠加：</p>
 <p>$$
@@ -151,7 +161,7 @@ $$</p>
 <p>接下来如何将$ \hat{\mathbf v} = (\boldsymbol{\omega} , \mathbf{v}_0) $写成坐标，方便计算和编程？例如现在有一个刚体在运动，我们如何数值上量化出来？如何把“一个刚体运动”变成“可计算的 6 个数” ？</p>
 <p><strong>这时必须选择一组基底。</strong></p>
 <p>一个向量本身是没有意义的， 除非你知道它是相对于哪组基写的。 就像一个平移向量，必须知道是相对于哪个原点的平移，否则就没有意义。</p>
-<p>速度向量是基于** Plücker 基  ：**</p>
+<p>速度向量是基于** Plücker 基 ：**</p>
 <p>$$
 \mathcal D_O =
 {
@@ -164,49 +174,62 @@ $$</p>
 }
 $$</p>
 <p>来表示：</p>
-<h1>$$<br>
-\hat{v}</h1>
-<p>\omega_x\mathbf d_{Ox}<br>
-+<br>
-\omega_y\mathbf d_{Oy}<br>
-+<br>
-\omega_z\mathbf d_{Oz}<br>
-+<br>
-v_{Ox}\mathbf d_x<br>
-+<br>
-v_{Oy}\mathbf d_y<br>
-+<br>
-v_{Oz}\mathbf d_z<br>
+<p>$$
+\hat{v} =
+\omega_x\mathbf d_{Ox}
++
+\omega_y\mathbf d_{Oy}
++
+\omega_z\mathbf d_{Oz}
++
+v_{Ox}\mathbf d_x
++
+v_{Oy}\mathbf d_y
++
+v_{Oz}\mathbf d_z
 $$</p>
 <p>写成矩阵形式：</p>
-<h1>$$<br>
-\underline{\hat{v}}_O</h1>
-<h1>\begin{bmatrix}<br>
-\omega_x \<br>
-\omega_y \<br>
-\omega_z \<br>
-v_{Ox} \<br>
-v_{Oy} \<br>
-v_{Oz}<br>
-\end{bmatrix}</h1>
-<p>\begin{bmatrix}<br>
-\underline{\boldsymbol{\omega}} \<br>
-\underline{\mathbf v}_O<br>
-\end{bmatrix}<br>
+<p>$$
+
+\underline{\hat{v}}_O =
+
+\begin{bmatrix}
+
+\omega_x \\
+
+\omega_y \\
+
+\omega_z \\
+
+v_{Ox} \\
+
+v_{Oy} \\
+
+v_{Oz}
+
+\end{bmatrix} =
+
+\begin{bmatrix}
+
+\underline{\boldsymbol{\omega}} \\
+
+\underline{\mathbf v}_O
+
+\end{bmatrix}
+
 $$</p>
-<p>这里的下标 O很重要 ，表达的就是 **这个空间速度是用以O为原点的 Plücker 坐标系来表示的。  **</p>
+<p>这里的下标 O很重要 ，表达的就是 **这个空间速度是用以O为原点的 Plücker 坐标系来表示的。 **</p>
 <p>如果换一个坐标原点P，<strong>那么角速度不变，线速度会发生变化。</strong></p>
-<h1>因为<br>
-$$<br>
-\mathbf v_P</h1>
-<p>\mathbf v_O<br>
-+<br>
-\boldsymbol{\omega}<br>
-\times<br>
-\overrightarrow{OP}<br>
+<p>因为</p>
+<p>$$
+\mathbf v_P =
+\mathbf v_O +
+\boldsymbol{\omega}
+\times
+\overrightarrow{OP}
 $$</p>
-<p>这里每一项都依赖坐标系 $ O_{xyz} $, 如果换成坐标系 $ P_{xyz} $, <strong>数值上可能会发生变化，但是真实表达的运动是不变的。</strong></p>
-<p>**空间速度描述整个刚体的速度场；角速度是这个速度场的全局旋转部分，所以不随参考点变；线速度部分是“所选参考点处的点速度”，参考点换了，取的点不同，所以线速度分量会变。  **</p></div>
+<p>这里每一项都依赖坐标系 $ O*{xyz} $, 如果换成坐标系 $ P*{xyz} $, <strong>数值上可能会发生变化，但是真实表达的运动是不变的。</strong></p>
+<p>空间速度描述整个刚体的速度场；角速度是这个速度场的全局旋转部分，所以不随参考点变；线速度部分是“所选参考点处的点速度”，参考点换了，取的点不同，所以线速度分量会变。</p></div>
 <div style="font-size:small;margin-top:8px;float:right;">转载请注明出处</div>
 
 <button class="btn btn-block" type="button" onclick="openComments()" id="cmButton">评论</button>
